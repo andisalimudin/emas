@@ -1,0 +1,297 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Models
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  name      String
+  phone     String?
+  role      String     @default("CUSTOMER") // Role: SUPER_ADMIN, ADMIN, FINANCE, AGENT_MANAGER, VIEWER, AGENT, CUSTOMER, FUNDER, PARTNER
+  status    String     @default("ACTIVE")   // UserStatus: ACTIVE, INACTIVE, SUSPENDED, PENDING_APPROVAL
+  isLocked  Boolean    @default(false)
+  avatarUrl String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relationships
+  orders              Order[]
+  agentSales          AgentSale[]
+  companyPurchases    CompanyPurchase[]
+  funder              Funder?
+  auditLogs           AuditLog[]
+  lockHistory         AccountLockHistory[]
+  transactions        Transaction[]
+  agentProfile        AgentProfile?
+  addresses           Address[]
+  cart                Cart?
+  notifications       Notification[]
+  payments            Payment[]
+  wallet              Wallet?
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  balance   Int      @default(0) // Token balance
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  amount    Int      // Positive for credit, negative for debit
+  type      String   // "TOPUP", "DEDUCT_LOCK_PRICE", "REFUND"
+  description String?
+  createdAt DateTime @default(now())
+}
+
+model AgentProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  commissionRate  Float    @default(0.0) // Percentage
+  totalSales      Float    @default(0.0)
+  totalCommission Float    @default(0.0)
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  weight      Float    // in grams
+  purity      String   // e.g., "999.9", "916"
+  imageUrl    String?
+  category    String?
+  categoryId  String?
+  categoryRel Category? @relation(fields: [categoryId], references: [id])
+  stock       Int      @default(0)
+  price       Float    @default(0.0) // Add price field
+  lockDuration Int     @default(15)  // Duration in minutes for price lock
+  isActive    Boolean  @default(true)
+  hidePrice   Boolean  @default(false) // Hide price in public mode
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model GoldPrice {
+  id             String   @id @default(uuid())
+  buyPrice       Float    // Price company buys at
+  sellPrice      Float    // Base price company sells at
+  marginAgent    Float    // Margin for agents
+  marginCustomer Float    // Margin for customers
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  createdBy      String?  // Admin ID who set the price
+}
+
+model PriceLock {
+  id          String   @id @default(uuid())
+  price       Float
+  duration    Int      // in minutes
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  createdBy   String?  // Admin ID
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      String      @default("PENDING_PAYMENT") // OrderStatus
+  totalAmount Float
+  proofUrl    String?
+  invoiceUrl  String?
+  paymentMethod   String? // "MANUAL_TRANSFER", "GATEWAY"
+  shippingAddressId String?
+  shippingAddress Address? @relation(fields: [shippingAddressId], references: [id])
+  trackingNumber  String?
+  shippingStatus  String? // "PENDING", "SHIPPED", "DELIVERED"
+  payment         Payment?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  label     String   // e.g., "Home", "Office"
+  recipient String
+  phone     String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String   @default("Malaysia")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  amount        Float
+  method        String   // "MANUAL_TRANSFER"
+  status        String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  reference     String?  // Bank Ref
+  proofUrl      String?
+  bankName      String?
+  paymentDate   DateTime?
+  verifiedBy    String?  // Admin ID
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // "ORDER", "PAYMENT", "SYSTEM"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id])
+  productId    String
+  product      Product @relation(fields: [productId], references: [id])
+  quantity     Int
+  priceAtOrder Float
+}
+
+model AgentSale {
+  id           String   @id @default(uuid())
+  agentId      String
+  agent        User     @relation(fields: [agentId], references: [id])
+  customerName String?  // If selling to external customer manually
+  totalAmount  Float
+  commission   Float
+  createdAt    DateTime @default(now())
+}
+
+model CompanyPurchase {
+  id          String         @id @default(uuid())
+  agentId     String
+  agent       User           @relation(fields: [agentId], references: [id])
+  weight      Float
+  purity      String
+  offerPrice  Float
+  status      String         @default("OFFER_SUBMITTED") // PurchaseStatus
+  deadline    DateTime?      // 3 days from approval
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Funder {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  investmentAmount Float
+  profitShare      Float    // Percentage
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  type        String          // TransactionType
+  amount      Float
+  status      String          @default("COMPLETED")
+  referenceId String?         // ID of Order, Purchase, etc.
+  createdAt   DateTime        @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model AccountLockHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  reason    String
+  lockedBy  String   // Admin ID
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  value           String
+  description     String?
+  updatedAt       DateTime @updatedAt
+}
