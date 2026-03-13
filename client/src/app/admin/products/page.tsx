@@ -11,13 +11,32 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Trash } from 'lucide-react';
 import { fetchAPI } from '@/lib/api';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productToDelete, setProductToDelete] = useState<any>(null);
 
   useEffect(() => {
     loadProducts();
@@ -31,6 +50,26 @@ export default function ProductsPage() {
       console.error('Failed to load products:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+
+    try {
+      await fetchAPI(`/products/${productToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      // Refresh list
+      loadProducts();
+      setProductToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      alert('Gagal memadam produk');
     }
   };
 
@@ -94,9 +133,31 @@ export default function ProductsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors">
-                      <MoreHorizontal size={18} />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Buka menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
+                        <DropdownMenuLabel>Tindakan</DropdownMenuLabel>
+                        <DropdownMenuItem className="cursor-pointer hover:bg-white/10">
+                          <Link href={`/admin/products/${product.id}`} className="flex w-full items-center">
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem 
+                          className="text-red-500 cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10"
+                          onClick={() => setProductToDelete(product)}
+                        >
+                          <Trash className="mr-2 h-4 w-4" />
+                          Padam
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))
@@ -104,6 +165,28 @@ export default function ProductsPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent className="bg-zinc-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Adakah anda pasti?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Tindakan ini tidak boleh dipulihkan. Ini akan memadam produk 
+              <span className="font-bold text-white"> {productToDelete?.name} </span>
+              daripada pangkalan data secara kekal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white">Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteProduct}
+              className="bg-red-600 hover:bg-red-700 text-white border-none"
+            >
+              Padam
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
