@@ -21,7 +21,8 @@ const getPlaceholderImage = (text: string) => {
       <text x="50%" y="50%" font-family="Arial, sans-serif" font-weight="bold" font-size="36" fill="#D4AF37" text-anchor="middle" dy=".3em">${text}</text>
     </svg>
   `;
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  // Use btoa for browser compatibility instead of Buffer
+  return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
 export default function ProductDetailPage() {

@@ -27,7 +27,7 @@ export default function SettingsPage() {
       data.forEach((item: any) => {
         formattedSettings[item.key] = item.value;
       });
-      setSettings(prev => ({ ...prev, ...formattedSettings }));
+      setSettings((prev: any) => ({ ...prev, ...formattedSettings }));
     } catch (err) {
       console.error('Failed to load settings:', err);
     }
@@ -35,7 +35,7 @@ export default function SettingsPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSettings(prev => ({ ...prev, [name]: value }));
+    setSettings((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
