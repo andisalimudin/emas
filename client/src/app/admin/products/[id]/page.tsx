@@ -63,7 +63,9 @@ export default function EditProductPage() {
     
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) : value
+      [name]: type === 'number' 
+        ? (value === '' ? 0 : parseFloat(value)) 
+        : value
     }));
   };
 
@@ -86,7 +88,13 @@ export default function EditProductPage() {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          weight: parseFloat(formData.weight.toString()),
+          price: parseFloat(formData.price.toString()),
+          stock: parseInt(formData.stock.toString()),
+          lockDuration: parseInt(formData.lockDuration.toString())
+        }),
       });
 
       router.push('/admin/products');
