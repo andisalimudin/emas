@@ -19,43 +19,43 @@ export interface SidebarItem {
 
 export const sidebarItems: SidebarItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Papan Pemuka',
     path: '/admin',
     icon: LayoutDashboard,
     roles: ['SUPER_ADMIN', 'ADMIN', 'FINANCE', 'AGENT_MANAGER', 'VIEWER'],
   },
   {
-    title: 'User Management',
+    title: 'Pengurusan Pengguna',
     path: '/admin/users',
     icon: Users,
     roles: ['SUPER_ADMIN', 'ADMIN', 'AGENT_MANAGER'],
   },
   {
-    title: 'Agent Management',
+    title: 'Pengurusan Ejen',
     path: '/admin/agents',
     icon: ShieldCheck,
     roles: ['SUPER_ADMIN', 'ADMIN', 'AGENT_MANAGER'],
   },
   {
-    title: 'Products',
+    title: 'Produk',
     path: '/admin/products',
     icon: ShoppingBag,
     roles: ['SUPER_ADMIN', 'ADMIN'],
   },
   {
-    title: 'Transactions',
+    title: 'Transaksi',
     path: '/admin/transactions',
     icon: FileText,
     roles: ['SUPER_ADMIN', 'ADMIN', 'FINANCE'],
   },
   {
-    title: 'Finance',
+    title: 'Kewangan',
     path: '/admin/finance',
     icon: DollarSign,
     roles: ['SUPER_ADMIN', 'FINANCE'],
   },
   {
-    title: 'Settings',
+    title: 'Tetapan',
     path: '/admin/settings',
     icon: Settings,
     roles: ['SUPER_ADMIN'],

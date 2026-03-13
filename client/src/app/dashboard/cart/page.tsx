@@ -82,7 +82,7 @@ export default function CartPage() {
     }, 0);
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading cart...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Sedang memuatkan troli...</div>;
 
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
@@ -90,10 +90,10 @@ export default function CartPage() {
         <div className="bg-zinc-900 p-6 rounded-full border border-white/10 text-gray-500">
           <ShoppingBag size={48} />
         </div>
-        <h2 className="text-2xl font-bold text-white">Your cart is empty</h2>
-        <p className="text-gray-400 max-w-sm">Looks like you haven't added any gold to your collection yet.</p>
+        <h2 className="text-2xl font-bold text-white">Troli anda kosong</h2>
+        <p className="text-gray-400 max-w-sm">Nampaknya anda belum menambah sebarang emas ke dalam koleksi anda.</p>
         <Link href="/dashboard/products">
-          <Button className="mt-4">Browse Products</Button>
+          <Button className="mt-4">Lihat Produk</Button>
         </Link>
       </div>
     );
@@ -101,7 +101,7 @@ export default function CartPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-white">Shopping Cart</h1>
+      <h1 className="text-2xl font-bold text-white">Troli Belanja</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -148,7 +148,7 @@ export default function CartPage() {
                   disabled={updating === item.id}
                   className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1 transition-colors"
                 >
-                  <Trash size={12} /> Remove
+                  <Trash size={12} /> Buang
                 </button>
               </div>
             </div>
@@ -157,26 +157,26 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-6 h-fit space-y-6">
-          <h3 className="text-lg font-bold text-white">Order Summary</h3>
+          <h3 className="text-lg font-bold text-white">Ringkasan Pesanan</h3>
           
           <div className="space-y-3 text-sm">
             <div className="flex justify-between text-gray-400">
-              <span>Subtotal</span>
+              <span>Subjumlah</span>
               <span>RM {calculateTotal().toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-gray-400">
-              <span>Shipping</span>
-              <span>Calculated at checkout</span>
+              <span>Penghantaran</span>
+              <span>Dikira semasa pembayaran</span>
             </div>
             <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-white text-lg">
-              <span>Total</span>
+              <span>Jumlah</span>
               <span>RM {calculateTotal().toLocaleString()}</span>
             </div>
           </div>
 
           <Link href="/dashboard/checkout" className="block w-full">
             <Button className="w-full flex items-center justify-center gap-2 py-6 text-lg">
-              Proceed to Checkout <ArrowRight size={20} />
+              Teruskan ke Pembayaran <ArrowRight size={20} />
             </Button>
           </Link>
         </div>

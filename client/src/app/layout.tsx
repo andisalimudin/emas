@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GoldExclude | Exclusive Gold Trading",
-  description: "Premium Gold Trading Platform for Agents and Funders",
+  title: "GoldExclude | Dagangan Emas Eksklusif",
+  description: "Platform Dagangan Emas Premium untuk Ejen dan Pembiaya",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="ms" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >

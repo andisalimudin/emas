@@ -37,11 +37,11 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Products</h1>
+        <h1 className="text-2xl font-bold text-white">Produk</h1>
         <Link href="/admin/products/new">
           <Button className="flex items-center gap-2">
             <Plus size={16} />
-            Add Product
+            Tambah Produk
           </Button>
         </Link>
       </div>
@@ -50,7 +50,7 @@ export default function ProductsPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
           <Input 
-            placeholder="Search products..." 
+            placeholder="Cari produk..." 
             className="pl-10"
           />
         </div>
@@ -60,22 +60,22 @@ export default function ProductsPage() {
         <table className="w-full text-left text-sm text-gray-400">
           <thead className="bg-white/5 text-gray-200 uppercase font-medium">
             <tr>
-              <th className="px-6 py-4">Product Name</th>
-              <th className="px-6 py-4">Weight (g)</th>
-              <th className="px-6 py-4">Purity</th>
-              <th className="px-6 py-4">Stock</th>
+              <th className="px-6 py-4">Nama Produk</th>
+              <th className="px-6 py-4">Berat (g)</th>
+              <th className="px-6 py-4">Ketulenan</th>
+              <th className="px-6 py-4">Stok</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4 text-right">Tindakan</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center">Loading...</td>
+                <td colSpan={6} className="px-6 py-8 text-center">Memuatkan...</td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center">No products found.</td>
+                <td colSpan={6} className="px-6 py-8 text-center">Tiada produk ditemui.</td>
               </tr>
             ) : (
               products.map((product) => (
@@ -90,7 +90,7 @@ export default function ProductsPage() {
                         ? 'bg-green-500/10 text-green-500 border-green-500/20' 
                         : 'bg-red-500/10 text-red-500 border-red-500/20'
                     }`}>
-                      {product.isActive ? 'Active' : 'Inactive'}
+                      {product.isActive ? 'Aktif' : 'Tidak Aktif'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">

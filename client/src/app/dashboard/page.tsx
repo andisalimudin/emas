@@ -29,16 +29,16 @@ import clsx from 'clsx';
 const spendingData = [
   { name: 'Jan', amount: 0 },
   { name: 'Feb', amount: 0 },
-  { name: 'Mar', amount: 450 },
+  { name: 'Mac', amount: 450 },
   { name: 'Apr', amount: 1200 },
-  { name: 'May', amount: 800 },
+  { name: 'Mei', amount: 800 },
   { name: 'Jun', amount: 1500 },
 ];
 
 const orderStatusData = [
-  { name: 'Completed', value: 5, color: '#10b981' }, // green
-  { name: 'Pending', value: 2, color: '#f59e0b' },   // yellow
-  { name: 'Cancelled', value: 1, color: '#ef4444' }, // red
+  { name: 'Selesai', value: 5, color: '#10b981' }, // green
+  { name: 'Tertunda', value: 2, color: '#f59e0b' },   // yellow
+  { name: 'Dibatalkan', value: 1, color: '#ef4444' }, // red
 ];
 
 export default function UserDashboard() {
@@ -47,25 +47,25 @@ export default function UserDashboard() {
       {/* Welcome & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="Total Spending" 
+          title="Jumlah Perbelanjaan" 
           value="RM 3,950.00" 
           icon={CreditCard}
           trend="+12%"
           isPositive={true}
         />
         <StatCard 
-          title="Total Orders" 
+          title="Jumlah Pesanan" 
           value="8" 
           icon={ShoppingBag}
         />
         <StatCard 
-          title="Pending Orders" 
+          title="Pesanan Tertunda" 
           value="2" 
           icon={Clock}
           isWarning={true}
         />
         <StatCard 
-          title="Gold Holdings" 
+          title="Pegangan Emas" 
           value="15.5g" 
           icon={Package}
           trend="+5g"
@@ -76,22 +76,22 @@ export default function UserDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <QuickAction 
-          title="Buy Gold" 
-          description="Browse our latest collection" 
+          title="Beli Emas" 
+          description="Lihat koleksi terkini kami" 
           icon={TrendingUp} 
           href="/dashboard/products"
           color="bg-gold-500 text-black hover:bg-gold-400"
         />
         <QuickAction 
-          title="My Orders" 
-          description="Track your shipments" 
+          title="Pesanan Saya" 
+          description="Jejak penghantaran anda" 
           icon={Package} 
           href="/dashboard/orders"
           color="bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10"
         />
         <QuickAction 
-          title="Update Profile" 
-          description="Manage account details" 
+          title="Kemaskini Profil" 
+          description="Urus butiran akaun" 
           icon={CheckCircle} 
           href="/dashboard/profile"
           color="bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10"
@@ -102,7 +102,7 @@ export default function UserDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Spending Chart */}
         <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Spending Overview</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Gambaran Keseluruhan Perbelanjaan</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={spendingData}>
@@ -126,7 +126,7 @@ export default function UserDashboard() {
 
         {/* Order Status Chart */}
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Order Status</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Status Pesanan</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -156,18 +156,18 @@ export default function UserDashboard() {
       {/* Recent Orders Table (Simplified) */}
       <div className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden">
         <div className="p-6 border-b border-white/10 flex justify-between items-center">
-          <h3 className="text-lg font-bold text-white">Recent Transactions</h3>
+          <h3 className="text-lg font-bold text-white">Transaksi Terkini</h3>
           <Link href="/dashboard/orders" className="text-sm text-gold-500 hover:underline">
-            View All
+            Lihat Semua
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-400">
             <thead className="bg-white/5 text-gray-200 uppercase font-medium">
               <tr>
-                <th className="px-6 py-4">Order ID</th>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">ID Pesanan</th>
+                <th className="px-6 py-4">Tarikh</th>
+                <th className="px-6 py-4">Jumlah</th>
                 <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
@@ -175,11 +175,11 @@ export default function UserDashboard() {
               {[1, 2, 3].map((i) => (
                 <tr key={i} className="hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4 font-mono">#ORD-2024-{1000+i}</td>
-                  <td className="px-6 py-4">Mar {10+i}, 2024</td>
+                  <td className="px-6 py-4">Mac {10+i}, 2024</td>
                   <td className="px-6 py-4 text-white font-medium">RM {(i*500 + 250).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span className="px-2 py-1 rounded-md bg-green-500/10 text-green-500 border border-green-500/20 text-xs">
-                      Completed
+                      Selesai
                     </span>
                   </td>
                 </tr>
@@ -213,7 +213,7 @@ function StatCard({ title, value, icon: Icon, trend, isPositive, isWarning }: an
           isPositive ? "text-green-500" : "text-red-500"
         )}>
           {isPositive ? <TrendingUp size={14} /> : <TrendingUp size={14} className="rotate-180" />}
-          {trend} from last month
+          {trend} dari bulan lepas
         </div>
       )}
     </div>

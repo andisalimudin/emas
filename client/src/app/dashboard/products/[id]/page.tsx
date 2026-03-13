@@ -59,17 +59,17 @@ export default function ProductDetailPage() {
         },
         body: JSON.stringify({ productId: product.id, quantity: 1 }),
       });
-      alert('Added to cart!');
+      alert('Ditambah ke troli!');
     } catch (err) {
       console.error('Failed to add to cart:', err);
-      alert('Failed to add to cart');
+      alert('Gagal menambah ke troli');
     } finally {
       setProcessing(false);
     }
   };
 
   const lockPrice = async () => {
-    if (!confirm(`Lock price for ${product.name} at RM ${product.price.toLocaleString()} for 1 Token?`)) return;
+    if (!confirm(`Kunci harga untuk ${product.name} pada RM ${product.price.toLocaleString()} dengan 1 Token?`)) return;
 
     setProcessing(true);
     try {
@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
       await fetchAPI('/wallet/deduct', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify({ tokens: 1, description: `Price Lock for ${product.name}` }),
+        body: JSON.stringify({ tokens: 1, description: `Kunci Harga untuk ${product.name}` }),
       });
 
       // 2. Redirect to checkout (Simulated by adding to cart)
@@ -90,17 +90,17 @@ export default function ProductDetailPage() {
       });
       
       router.push('/dashboard/cart');
-      alert(`Price locked! You have ${product.lockDuration || 15} minutes to checkout.`);
+      alert(`Harga dikunci! Anda mempunyai ${product.lockDuration || 15} minit untuk membuat pembayaran.`);
     } catch (err) {
       console.error('Failed to lock price:', err);
-      alert('Failed to lock price. Please check your wallet balance.');
+      alert('Gagal mengunci harga. Sila semak baki dompet anda.');
     } finally {
       setProcessing(false);
     }
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading product...</div>;
-  if (!product) return <div className="text-center py-12 text-gray-500">Product not found.</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Sedang memuatkan produk...</div>;
+  if (!product) return <div className="text-center py-12 text-gray-500">Produk tidak ditemui.</div>;
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
@@ -109,7 +109,7 @@ export default function ProductDetailPage() {
         onClick={() => router.back()} 
         className="text-gray-400 hover:text-white flex items-center gap-2 pl-0"
       >
-        <ArrowLeft size={20} /> Back to Products
+        <ArrowLeft size={20} /> Kembali ke Produk
       </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -135,14 +135,14 @@ export default function ProductDetailPage() {
                 <ShieldCheck size={14} /> {product.purity}
               </span>
               <span className="flex items-center gap-1 bg-white/5 px-3 py-1 rounded-full text-sm">
-                <Package size={14} /> Stock: {product.stock}
+                <Package size={14} /> Stok: {product.stock}
               </span>
             </div>
           </div>
 
           <div className="bg-zinc-900 border border-white/10 rounded-xl p-6 space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Current Price</span>
+              <span className="text-gray-400">Harga Semasa</span>
               <span className="text-3xl font-mono font-bold text-gold-500">
                 RM {product.price.toLocaleString()}
               </span>
@@ -157,7 +157,7 @@ export default function ProductDetailPage() {
                 className="border-gold-500/50 text-gold-500 hover:bg-gold-500/10 hover:text-gold-400 h-14"
               >
                 <Lock className="mr-2" size={20} />
-                Lock Price (1 Token)
+                Kunci Harga (1 Token)
               </Button>
               <Button 
                 size="lg"
@@ -166,21 +166,21 @@ export default function ProductDetailPage() {
                 className="bg-gold-500 hover:bg-gold-400 text-black font-bold h-14"
               >
                 <ShoppingCart className="mr-2" size={20} />
-                Add to Cart
+                Tambah ke Troli
               </Button>
             </div>
             <p className="text-xs text-center text-gray-500">
-              Price lock valid for {product.lockDuration || 15} minutes.
+              Kunci harga sah selama {product.lockDuration || 15} minit.
             </p>
           </div>
 
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
               <Info size={20} className="text-gold-500" />
-              Description
+              Penerangan
             </h3>
             <div className="text-gray-400 leading-relaxed whitespace-pre-wrap">
-              {product.description || "No description available for this product."}
+              {product.description || "Tiada penerangan tersedia untuk produk ini."}
             </div>
           </div>
         </div>

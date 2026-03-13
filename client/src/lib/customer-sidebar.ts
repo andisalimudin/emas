@@ -18,37 +18,37 @@ export interface SidebarItem {
 
 export const customerSidebarItems: SidebarItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Papan Pemuka',
     path: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    title: 'Browse Products',
+    title: 'Lihat Produk',
     path: '/dashboard/products',
     icon: ShoppingBag,
   },
   {
-    title: 'My Cart',
+    title: 'Troli Saya',
     path: '/dashboard/cart',
     icon: ShoppingCart,
   },
   {
-    title: 'My Wallet',
+    title: 'Dompet Saya',
     path: '/dashboard/wallet',
     icon: Wallet,
   },
   {
-    title: 'My Orders',
+    title: 'Pesanan Saya',
     path: '/dashboard/orders',
     icon: FileText,
   },
   {
-    title: 'Price Lock',
+    title: 'Kunci Harga',
     path: '/dashboard/price-lock',
     icon: Clock,
   },
   {
-    title: 'Profile',
+    title: 'Profil',
     path: '/dashboard/profile',
     icon: User,
   },

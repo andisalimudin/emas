@@ -34,28 +34,28 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="Total Users" 
+          title="Jumlah Pengguna" 
           value="1,234" 
           change="+12.5%" 
           isPositive={true} 
           icon={Users} 
         />
         <StatCard 
-          title="Total Revenue" 
+          title="Jumlah Hasil" 
           value="RM 45,231.89" 
           change="+8.2%" 
           isPositive={true} 
           icon={DollarSign} 
         />
         <StatCard 
-          title="Total Orders" 
+          title="Jumlah Pesanan" 
           value="573" 
           change="-2.4%" 
           isPositive={false} 
           icon={ShoppingCart} 
         />
         <StatCard 
-          title="Active Agents" 
+          title="Ejen Aktif" 
           value="89" 
           change="+5.7%" 
           isPositive={true} 
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart */}
         <div className="lg:col-span-2 bg-zinc-900 border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Sales Overview</h3>
+          <h3 className="text-lg font-bold text-white mb-4">Gambaran Keseluruhan Jualan</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
 
         {/* Recent Activity */}
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Recent Activities</h3>
+          <h3 className="text-lg font-bold text-white mb-4">Aktiviti Terkini</h3>
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-lg transition-colors">
@@ -98,8 +98,8 @@ export default function AdminDashboard() {
                   JS
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">John Doe purchased Gold 999</p>
-                  <p className="text-xs text-gray-400">2 minutes ago</p>
+                  <p className="text-sm font-medium text-white">John Doe membeli Emas 999</p>
+                  <p className="text-xs text-gray-400">2 minit yang lalu</p>
                 </div>
               </div>
             ))}

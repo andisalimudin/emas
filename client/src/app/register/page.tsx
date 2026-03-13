@@ -38,8 +38,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-zinc-900 p-8 rounded-2xl border border-white/10 shadow-xl">
-        <h2 className="text-3xl font-bold text-center mb-2">Create Account</h2>
-        <p className="text-gray-400 text-center mb-8">Join the GoldExclude platform</p>
+        <h2 className="text-3xl font-bold text-center mb-2">Cipta Akaun</h2>
+        <p className="text-gray-400 text-center mb-8">Sertai platform GoldExclude</p>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-6 text-sm">
@@ -49,49 +49,49 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Nama Penuh</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
-              placeholder="Enter your full name"
+              placeholder="Masukkan nama penuh anda"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Emel</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
-              placeholder="Enter your email"
+              placeholder="Masukkan emel anda"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Kata Laluan</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
-              placeholder="Enter your password"
+              placeholder="Masukkan kata laluan anda"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Role</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Peranan</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
             >
-              <option value="CUSTOMER">Customer</option>
-              <option value="AGENT">Agent</option>
-              <option value="FUNDER">Funder</option>
-              <option value="PARTNER">Partner</option>
+              <option value="CUSTOMER">Pelanggan</option>
+              <option value="AGENT">Ejen</option>
+              <option value="FUNDER">Pembiaya</option>
+              <option value="PARTNER">Rakan Kongsi</option>
             </select>
           </div>
 
@@ -100,14 +100,14 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-gold-500 hover:bg-gold-400 text-black font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? 'Sedang mencipta akaun...' : 'Daftar'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-400">
-          Already have an account?{' '}
+          Sudah mempunyai akaun?{' '}
           <Link href="/login" className="text-gold-500 hover:underline">
-            Login
+            Log Masuk
           </Link>
         </p>
       </div>

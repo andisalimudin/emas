@@ -42,8 +42,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-zinc-900 p-8 rounded-2xl border border-white/10 shadow-xl">
-        <h2 className="text-3xl font-bold text-center mb-2">Welcome Back</h2>
-        <p className="text-gray-400 text-center mb-8">Login to your account</p>
+        <h2 className="text-3xl font-bold text-center mb-2">Selamat Kembali</h2>
+        <p className="text-gray-400 text-center mb-8">Log masuk ke akaun anda</p>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-6 text-sm">
@@ -53,24 +53,24 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Emel</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
-              placeholder="Enter your email"
+              placeholder="Masukkan emel anda"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Kata Laluan</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
-              placeholder="Enter your password"
+              placeholder="Masukkan kata laluan anda"
               required
             />
           </div>
@@ -80,14 +80,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-gold-500 hover:bg-gold-400 text-black font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Sedang log masuk...' : 'Log Masuk'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-400">
-          Don't have an account?{' '}
+          Tiada akaun?{' '}
           <Link href="/register" className="text-gold-500 hover:underline">
-            Register
+            Daftar
           </Link>
         </p>
       </div>

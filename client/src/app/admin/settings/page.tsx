@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">System Settings</h1>
+      <h1 className="text-2xl font-bold text-white">Tetapan Sistem</h1>
 
       <form onSubmit={handleSubmit} className="bg-zinc-900 border border-white/10 rounded-xl p-6 space-y-6">
         {success && (
@@ -81,28 +81,28 @@ export default function SettingsPage() {
         )}
 
         <div className="space-y-4">
-          <h2 className="text-lg font-medium text-gold-500">Landing Page Content</h2>
+          <h2 className="text-lg font-medium text-gold-500">Kandungan Halaman Pendaratan</h2>
           
           <Input
-            label="Hero Title"
+            label="Tajuk Utama"
             name="heroTitle"
             value={settings.heroTitle}
             onChange={handleChange}
-            placeholder="e.g. Premium Gold Investment"
+            placeholder="cth. Pelaburan Emas Premium"
           />
           
           <Input
-            label="Hero Subtitle"
+            label="Subtajuk Utama"
             name="heroSubtitle"
             value={settings.heroSubtitle}
             onChange={handleChange}
-            placeholder="e.g. Secure your future with pure gold"
+            placeholder="cth. Jamin masa depan anda dengan emas tulen"
           />
 
-          <h2 className="text-lg font-medium text-gold-500 pt-4">General Configuration</h2>
+          <h2 className="text-lg font-medium text-gold-500 pt-4">Konfigurasi Umum</h2>
 
           <Input
-            label="Contact Email"
+            label="Emel Hubungan"
             name="contactEmail"
             value={settings.contactEmail}
             onChange={handleChange}
@@ -117,13 +117,13 @@ export default function SettingsPage() {
               onChange={(e) => setSettings((prev: any) => ({ ...prev, maintenanceMode: e.target.checked ? 'true' : 'false' }))}
               className="w-4 h-4 rounded border-gray-300 text-gold-500 focus:ring-gold-500"
             />
-            <span className="text-sm text-gray-300">Enable Maintenance Mode</span>
+            <span className="text-sm text-gray-300">Dayakan Mod Penyelenggaraan</span>
           </div>
         </div>
 
         <div className="flex justify-end pt-4 border-t border-white/10">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
           </Button>
         </div>
       </form>

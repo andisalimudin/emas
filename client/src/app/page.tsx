@@ -36,12 +36,12 @@ const getPlaceholderImage = (text: string) => {
       <text x="50%" y="50%" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#D4AF37" text-anchor="middle" dy=".3em">${text}</text>
     </svg>
   `;
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
 export default function LandingPage() {
-  const [heroTitle, setHeroTitle] = useState('The Standard of <br />Exclusive Gold Trading');
-  const [heroSubtitle, setHeroSubtitle] = useState('Secure, scalable, and premium platform for serious investors and agents. Join the elite network of gold trading professionals.');
+  const [heroTitle, setHeroTitle] = useState('Piawaian <br />Perdagangan Emas Eksklusif');
+  const [heroSubtitle, setHeroSubtitle] = useState('Platform yang selamat, berskala, dan premium untuk pelabur dan ejen serius. Sertai rangkaian elit profesional perdagangan emas.');
   const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -75,21 +75,21 @@ export default function LandingPage() {
           </Link>
           
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
-            <Link href="#products" className="hover:text-gold-400 transition-colors">Products</Link>
-            <Link href="#about" className="hover:text-gold-400 transition-colors">About Us</Link>
-            <Link href="#agent" className="hover:text-gold-400 transition-colors">Become Agent</Link>
-            <Link href="#contact" className="hover:text-gold-400 transition-colors">Contact</Link>
+            <Link href="#products" className="hover:text-gold-400 transition-colors">Produk</Link>
+            <Link href="#about" className="hover:text-gold-400 transition-colors">Tentang Kami</Link>
+            <Link href="#agent" className="hover:text-gold-400 transition-colors">Jadi Ejen</Link>
+            <Link href="#contact" className="hover:text-gold-400 transition-colors">Hubungi</Link>
           </div>
 
           <div className="flex items-center space-x-4">
             <Link href="/login" className="text-sm font-medium hover:text-white text-gray-300 transition-colors">
-              Login
+              Log Masuk
             </Link>
             <Link 
               href="/register" 
               className="px-5 py-2 text-sm font-semibold bg-gradient-to-r from-gold-600 to-gold-400 text-black rounded-full hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all duration-300"
             >
-              Register
+              Daftar
             </Link>
           </div>
         </div>
@@ -127,13 +127,13 @@ export default function LandingPage() {
                 href="/register"
                 className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
               >
-                Start Trading <ArrowRight className="w-4 h-4" />
+                Mula Berdagang <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
                 href="#agent"
                 className="w-full sm:w-auto px-8 py-4 border border-white/20 hover:border-gold-500/50 hover:bg-gold-500/10 rounded-full transition-all text-white font-medium"
               >
-                Become an Agent
+                Daftar sebagai Ejen
               </Link>
             </motion.div>
           </motion.div>
@@ -145,10 +145,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { label: "Active Agents", value: "500+" },
-              { label: "Daily Volume", value: "RM 2M+" },
-              { label: "Gold Reserves", value: "100kg" },
-              { label: "Customer Trust", value: "100%" }
+              { label: "Ejen Aktif", value: "500+" },
+              { label: "Jumlah Harian", value: "RM 2M+" },
+              { label: "Rizab Emas", value: "100kg" },
+              { label: "Kepercayaan Pelanggan", value: "100%" }
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-3xl md:text-4xl font-bold text-gold-500">{stat.value}</div>
@@ -163,9 +163,9 @@ export default function LandingPage() {
       <section id="products" className="py-24 bg-black relative">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold">Premium Gold Products</h2>
+            <h2 className="text-3xl md:text-5xl font-bold">Produk Emas Premium</h2>
             <p className="text-gray-400 max-w-xl mx-auto">
-              Our collection features 999.9 purity gold bars and dinars, certified for excellence.
+              Koleksi kami menampilkan jongkong emas dan dinar berketulenan 999.9 yang diiktiraf.
             </p>
           </div>
 
@@ -190,7 +190,7 @@ export default function LandingPage() {
                       />
                     </div>
                     <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs font-medium text-gold-400">
-                      {product.purity} Purity
+                      {product.purity} Ketulenan
                     </div>
                   </div>
                   
@@ -205,19 +205,19 @@ export default function LandingPage() {
                       <div className="font-mono text-gold-500">
                         {!product.hidePrice && product.price > 0 
                           ? `RM ${product.price.toLocaleString()}` 
-                          : 'Price Hidden'}
+                          : 'Harga Tersembunyi'}
                       </div>
                     </div>
 
                     <button className="w-full py-3 mt-4 bg-white/5 hover:bg-gold-500 hover:text-black border border-white/10 hover:border-gold-500 rounded-lg transition-all duration-300 font-medium">
-                      View Details
+                      Lihat Butiran
                     </button>
                   </div>
                 </motion.div>
               ))
             ) : (
               <div className="col-span-3 text-center text-gray-500 py-12">
-                No products available at the moment.
+                Tiada produk tersedia buat masa ini.
               </div>
             )}
           </div>
@@ -230,18 +230,18 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                Built for Enterprise <br />
-                <span className="text-gold-500">Security & Scale</span>
+                Dibina untuk <br />
+                <span className="text-gold-500">Keselamatan & Skala Perusahaan</span>
               </h2>
               <p className="text-gray-400 text-lg">
-                We provide a robust platform that ensures every transaction is secure, transparent, and efficient.
+                Kami menyediakan platform teguh yang memastikan setiap transaksi selamat, telus, dan cekap.
               </p>
               
               <div className="space-y-6">
                 {[
-                  { icon: Shield, title: "Secure Transactions", desc: "Enterprise-grade encryption and audit logs for every action." },
-                  { icon: TrendingUp, title: "Real-time Analytics", desc: "Live market data and performance tracking for agents." },
-                  { icon: Clock, title: "3-Day Fulfillment", desc: "Guaranteed gold preparation within 3 days for verified agents." },
+                  { icon: Shield, title: "Transaksi Selamat", desc: "Penyulitan gred perusahaan dan log audit untuk setiap tindakan." },
+                  { icon: TrendingUp, title: "Analitik Masa Nyata", desc: "Data pasaran langsung dan penjejakan prestasi untuk ejen." },
+                  { icon: Clock, title: "Pemenuhan 3 Hari", desc: "Penyediaan emas dijamin dalam masa 3 hari untuk ejen yang disahkan." },
                 ].map((feature, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center flex-shrink-0 text-gold-500">
@@ -262,12 +262,12 @@ export default function LandingPage() {
                  <div className="w-24 h-24 bg-gold-500 rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(212,175,55,0.4)]">
                     <Lock className="w-10 h-10 text-black" />
                  </div>
-                 <h3 className="text-2xl font-bold">Exclusive Access</h3>
+                 <h3 className="text-2xl font-bold">Akses Eksklusif</h3>
                  <p className="text-gray-400">
-                   Prices and trading capabilities are restricted to verified members only.
+                   Harga dan keupayaan perdagangan terhad kepada ahli yang disahkan sahaja.
                  </p>
                  <Link href="/register" className="text-gold-500 font-semibold hover:text-gold-400">
-                   Apply for Membership &rarr;
+                   Mohon Keahlian &rarr;
                  </Link>
               </div>
             </div>
@@ -280,12 +280,12 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gold-600/10"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-3xl md:text-5xl font-bold text-white">Become a Verified Agent</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white">Jadi Ejen Yang Disahkan</h2>
             <p className="text-xl text-gray-300">
-              Join our network of successful gold traders. Unlock wholesale prices, earn commissions, and access exclusive tools.
+              Sertai rangkaian pedagang emas kami yang berjaya. Nikmati harga borong, komisen, dan akses alat eksklusif.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-2xl mx-auto py-8">
-              {["Wholesale Pricing", "Commission Tracking", "Priority Support"].map((item, i) => (
+              {["Harga Borong", "Penjejakan Komisen", "Sokongan Utama"].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-gold-400 font-medium">
                   <CheckCircle className="w-5 h-5" /> {item}
                 </div>
@@ -295,7 +295,7 @@ export default function LandingPage() {
               href="/register?role=agent"
               className="inline-block px-8 py-4 bg-gold-500 hover:bg-gold-400 text-black font-bold text-lg rounded-full transition-colors shadow-lg shadow-gold-500/20"
             >
-              Apply as Agent
+              Mohon sebagai Ejen
             </Link>
           </div>
         </div>
@@ -310,39 +310,39 @@ export default function LandingPage() {
                 GOLD<span className="text-gold-500">EXCLUDE</span>
               </Link>
               <p className="text-gray-500 text-sm">
-                The premier platform for secure and exclusive gold trading.
+                Platform utama untuk perdagangan emas yang selamat dan eksklusif.
               </p>
             </div>
             
             <div>
               <h4 className="font-bold text-white mb-6">Platform</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><Link href="#products" className="hover:text-gold-500">Products</Link></li>
-                <li><Link href="#agent" className="hover:text-gold-500">Agents</Link></li>
-                <li><Link href="/login" className="hover:text-gold-500">Login</Link></li>
+                <li><Link href="#products" className="hover:text-gold-500">Produk</Link></li>
+                <li><Link href="#agent" className="hover:text-gold-500">Ejen</Link></li>
+                <li><Link href="/login" className="hover:text-gold-500">Log Masuk</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-bold text-white mb-6">Company</h4>
+              <h4 className="font-bold text-white mb-6">Syarikat</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><Link href="#about" className="hover:text-gold-500">About Us</Link></li>
-                <li><Link href="#" className="hover:text-gold-500">Careers</Link></li>
-                <li><Link href="#" className="hover:text-gold-500">Contact</Link></li>
+                <li><Link href="#about" className="hover:text-gold-500">Tentang Kami</Link></li>
+                <li><Link href="#" className="hover:text-gold-500">Kerjaya</Link></li>
+                <li><Link href="#" className="hover:text-gold-500">Hubungi</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-bold text-white mb-6">Legal</h4>
+              <h4 className="font-bold text-white mb-6">Undang-undang</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><Link href="#" className="hover:text-gold-500">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-gold-500">Terms of Service</Link></li>
+                <li><Link href="#" className="hover:text-gold-500">Dasar Privasi</Link></li>
+                <li><Link href="#" className="hover:text-gold-500">Terma Perkhidmatan</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="pt-8 border-t border-white/5 text-center text-sm text-gray-600">
-            &copy; {new Date().getFullYear()} GoldExclude Trading. All rights reserved.
+            &copy; {new Date().getFullYear()} GoldExclude Trading. Hak cipta terpelihara.
           </div>
         </div>
       </footer>

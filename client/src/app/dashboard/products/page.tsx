@@ -23,7 +23,7 @@ const getPlaceholderImage = (text: string) => {
       <text x="50%" y="50%" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#D4AF37" text-anchor="middle" dy=".3em">${text}</text>
     </svg>
   `;
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
 export default function ProductsPage() {
@@ -60,17 +60,17 @@ export default function ProductsPage() {
         body: JSON.stringify({ productId, quantity: 1 }),
       });
       // Show success toast (todo)
-      alert('Added to cart!');
+      alert('Ditambah ke troli!');
     } catch (err) {
       console.error('Failed to add to cart:', err);
-      alert('Failed to add to cart');
+      alert('Gagal menambah ke troli');
     } finally {
       setAddingToCart(null);
     }
   };
 
   const lockPrice = async (product: any) => {
-    if (!confirm(`Lock price for ${product.name} at RM ${product.price.toLocaleString()} for 1 Token?`)) return;
+    if (!confirm(`Kunci harga untuk ${product.name} pada RM ${product.price.toLocaleString()} dengan 1 Token?`)) return;
 
     setLockingPrice(product.id);
     try {
@@ -78,17 +78,17 @@ export default function ProductsPage() {
       await fetchAPI('/wallet/deduct', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify({ tokens: 1, description: `Price Lock for ${product.name}` }),
+        body: JSON.stringify({ tokens: 1, description: `Kunci Harga untuk ${product.name}` }),
       });
 
       // 2. Redirect to checkout with locked price (Simulated for now by adding to cart and redirecting)
       await addToCart(product.id);
       router.push('/dashboard/cart');
       
-      alert(`Price locked! You have ${product.lockDuration || 15} minutes to checkout.`);
+      alert(`Harga dikunci! Anda mempunyai ${product.lockDuration || 15} minit untuk membuat pembayaran.`);
     } catch (err) {
       console.error('Failed to lock price:', err);
-      alert('Failed to lock price. Please check your wallet balance.');
+      alert('Gagal mengunci harga. Sila semak baki dompet anda.');
     } finally {
       setLockingPrice(null);
     }
@@ -101,14 +101,14 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-white">Browse Products</h1>
+        <h1 className="text-2xl font-bold text-white">Lihat Produk</h1>
         
         <div className="flex gap-4">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
             <input 
               type="text" 
-              placeholder="Search products..." 
+              placeholder="Cari produk..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-black border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-gold-500"
@@ -116,15 +116,15 @@ export default function ProductsPage() {
           </div>
           <Button variant="outline" className="flex items-center gap-2">
             <Filter size={18} />
-            Filter
+            Tapis
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading products...</div>
+        <div className="text-center py-12 text-gray-500">Sedang memuatkan produk...</div>
       ) : filteredProducts.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No products found.</div>
+        <div className="text-center py-12 text-gray-500">Tiada produk ditemui.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
@@ -162,7 +162,7 @@ export default function ProductsPage() {
                       onClick={() => lockPrice(product)}
                       disabled={lockingPrice === product.id}
                       className="h-8 w-8 p-0 rounded-full border-gold-500/50 text-gold-500 hover:bg-gold-500/10 hover:text-gold-400"
-                      title="Lock Price (1 Token)"
+                      title="Kunci Harga (1 Token)"
                     >
                       <Lock size={14} />
                     </Button>
@@ -171,7 +171,7 @@ export default function ProductsPage() {
                       onClick={() => addToCart(product.id)}
                       disabled={addingToCart === product.id}
                       className="h-8 w-8 p-0 rounded-full"
-                      title="Add to Cart"
+                      title="Tambah ke Troli"
                     >
                       <ShoppingCart size={14} />
                     </Button>

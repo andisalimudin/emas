@@ -60,10 +60,10 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">User Management</h1>
+        <h1 className="text-2xl font-bold text-white">Pengurusan Pengguna</h1>
         <Button className="flex items-center gap-2">
           <Plus size={16} />
-          Add User
+          Tambah Pengguna
         </Button>
       </div>
 
@@ -72,7 +72,7 @@ export default function UsersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
           <input 
             type="text" 
-            placeholder="Search users..." 
+            placeholder="Cari pengguna..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-black border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-gold-500"
@@ -83,22 +83,22 @@ export default function UsersPage() {
           onChange={(e) => setRoleFilter(e.target.value)}
           className="bg-black border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gold-500"
         >
-          <option value="">All Roles</option>
-          <option value="ADMIN">Admin</option>
-          <option value="AGENT">Agent</option>
-          <option value="CUSTOMER">Customer</option>
-          <option value="PARTNER">Partner</option>
-          <option value="FUNDER">Funder</option>
+          <option value="">Semua Peranan</option>
+          <option value="ADMIN">Pentadbir</option>
+          <option value="AGENT">Ejen</option>
+          <option value="CUSTOMER">Pelanggan</option>
+          <option value="PARTNER">Rakan Kongsi</option>
+          <option value="FUNDER">Pembiaya</option>
         </select>
         <select 
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-black border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gold-500"
         >
-          <option value="">All Status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-          <option value="SUSPENDED">Suspended</option>
+          <option value="">Semua Status</option>
+          <option value="ACTIVE">Aktif</option>
+          <option value="INACTIVE">Tidak Aktif</option>
+          <option value="SUSPENDED">Digantung</option>
         </select>
       </div>
 
@@ -106,21 +106,21 @@ export default function UsersPage() {
         <table className="w-full text-left text-sm text-gray-400">
           <thead className="bg-white/5 text-gray-200 uppercase font-medium">
             <tr>
-              <th className="px-6 py-4">Name</th>
-              <th className="px-6 py-4">Role</th>
+              <th className="px-6 py-4">Nama</th>
+              <th className="px-6 py-4">Peranan</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Joined</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4">Sertai</th>
+              <th className="px-6 py-4 text-right">Tindakan</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center">Loading users...</td>
+                <td colSpan={5} className="px-6 py-8 text-center">Memuatkan pengguna...</td>
               </tr>
             ) : filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center">No users found.</td>
+                <td colSpan={5} className="px-6 py-8 text-center">Tiada pengguna ditemui.</td>
               </tr>
             ) : (
               filteredUsers.map((user) => (
