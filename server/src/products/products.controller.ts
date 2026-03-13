@@ -25,8 +25,14 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Prisma.ProductUpdateInput) {
-    return this.productsService.update(id, data);
+  async update(@Param('id') id: string, @Body() data: Prisma.ProductUpdateInput) {
+    try {
+      console.log(`Updating product ${id} with data:`, data);
+      return await this.productsService.update(id, data);
+    } catch (error) {
+      console.error(`Error updating product ${id}:`, error);
+      throw error;
+    }
   }
 
   @UseGuards(AuthGuard('jwt'))

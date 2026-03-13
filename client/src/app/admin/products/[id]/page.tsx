@@ -99,6 +99,7 @@ export default function EditProductPage() {
 
       router.push('/admin/products');
     } catch (err: any) {
+      console.error('Update Error:', err);
       setError(err.message || 'Gagal mengemaskini produk');
     } finally {
       setSaving(false);
