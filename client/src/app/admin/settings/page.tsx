@@ -114,7 +114,7 @@ export default function SettingsPage() {
               type="checkbox"
               name="maintenanceMode"
               checked={settings.maintenanceMode === 'true'}
-              onChange={(e) => setSettings(prev => ({ ...prev, maintenanceMode: e.target.checked ? 'true' : 'false' }))}
+              onChange={(e) => setSettings((prev: any) => ({ ...prev, maintenanceMode: e.target.checked ? 'true' : 'false' }))}
               className="w-4 h-4 rounded border-gray-300 text-gold-500 focus:ring-gold-500"
             />
             <span className="text-sm text-gray-300">Enable Maintenance Mode</span>
