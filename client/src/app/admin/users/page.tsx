@@ -15,11 +15,24 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Plus, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Search, Edit, Trash } from 'lucide-react';
 import { fetchAPI } from '@/lib/api';
 import { format } from 'date-fns';
+import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -28,6 +41,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [userToDelete, setUserToDelete] = useState<any>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -43,9 +57,27 @@ export default function UsersPage() {
       setUsers(data);
     } catch (err: any) {
       console.error(err);
-      setError('Failed to fetch users');
+      setError('Gagal memuatkan pengguna');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await fetchAPI(`/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Gagal memadam pengguna');
     }
   };
 
@@ -156,9 +188,31 @@ export default function UsersPage() {
                     {user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : '-'}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors">
-                      <MoreHorizontal size={18} />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Buka menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
+                        <DropdownMenuLabel>Tindakan</DropdownMenuLabel>
+                        <DropdownMenuItem className="cursor-pointer hover:bg-white/10">
+                          <Link href={`/admin/users/${user.id}`} className="flex w-full items-center">
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem 
+                          className="text-red-500 cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10"
+                          onClick={() => setUserToDelete(user)}
+                        >
+                          <Trash className="mr-2 h-4 w-4" />
+                          Padam
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))
@@ -166,6 +220,28 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent className="bg-zinc-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Adakah anda pasti?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Tindakan ini tidak boleh dipulihkan. Ini akan memadam pengguna 
+              <span className="font-bold text-white"> {userToDelete?.email} </span>
+              daripada pangkalan data secara kekal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white">Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700 text-white border-none"
+            >
+              Padam
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
