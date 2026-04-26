@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { SettingsModule } from './settings/settings.module';
 import { CartsModule } from './carts/carts.module';
 import { WalletModule } from './wallet/wallet.module';
+import { ProductSubmissionsModule } from './product-submissions/product-submissions.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { WalletModule } from './wallet/wallet.module';
     UsersModule,
     AuthModule,
     ProductsModule,
+    ProductSubmissionsModule,
     SettingsModule,
     CartsModule,
     WalletModule,

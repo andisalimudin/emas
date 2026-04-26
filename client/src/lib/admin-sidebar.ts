@@ -3,7 +3,8 @@ import {
   LayoutDashboard, 
   Users, 
   Settings, 
-  ShoppingBag, 
+  ShoppingBag,
+  ClipboardList,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -24,6 +25,12 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Pengurusan Pengguna',
     path: '/admin/users',
     icon: Users,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Semakan Produk Vendor',
+    path: '/admin/product-submissions',
+    icon: ClipboardList,
     roles: ['ADMIN'],
   },
   {
