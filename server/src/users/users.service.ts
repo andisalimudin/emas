@@ -57,6 +57,18 @@ export class UsersService {
   async update(id: string, data: Prisma.UserUpdateInput) {
     const sanitizedData: any = { ...data };
     delete sanitizedData.password;
+    if (sanitizedData.role) {
+      const role = typeof sanitizedData.role === 'string' ? sanitizedData.role.trim().toUpperCase() : '';
+      if (role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'FINANCE' || role === 'AGENT_MANAGER' || role === 'VIEWER') {
+        sanitizedData.role = 'ADMIN';
+      } else if (role === 'PARTNER' || role === 'FUNDER') {
+        sanitizedData.role = 'PARTNER';
+      } else if (role === 'VENDOR' || role === 'AGENT') {
+        sanitizedData.role = 'VENDOR';
+      } else {
+        sanitizedData.role = 'CUSTOMER';
+      }
+    }
 
     return this.prisma.user.update({
       where: { id },

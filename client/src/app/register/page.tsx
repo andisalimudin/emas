@@ -89,8 +89,7 @@ export default function RegisterPage() {
               className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
             >
               <option value="CUSTOMER">Pelanggan</option>
-              <option value="AGENT">Ejen</option>
-              <option value="FUNDER">Pembiaya</option>
+              <option value="VENDOR">Vendor</option>
               <option value="PARTNER">Rakan Kongsi</option>
             </select>
           </div>

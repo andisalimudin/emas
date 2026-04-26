@@ -18,7 +18,7 @@ model User {
   password  String
   name      String
   phone     String?
-  role      String     @default("CUSTOMER") // Role: SUPER_ADMIN, ADMIN, FINANCE, AGENT_MANAGER, VIEWER, AGENT, CUSTOMER, FUNDER, PARTNER
+  role      String     @default("CUSTOMER") // Role: ADMIN, PARTNER, VENDOR, CUSTOMER
   status    String     @default("ACTIVE")   // UserStatus: ACTIVE, INACTIVE, SUSPENDED, PENDING_APPROVAL
   isLocked  Boolean    @default(false)
   avatarUrl String?

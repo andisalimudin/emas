@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     const userData = JSON.parse(storedUser);
-    if (!['SUPER_ADMIN', 'ADMIN', 'FINANCE', 'AGENT_MANAGER', 'VIEWER'].includes(userData.role)) {
+    if (userData.role !== 'ADMIN') {
       router.push('/dashboard');
       return;
     }

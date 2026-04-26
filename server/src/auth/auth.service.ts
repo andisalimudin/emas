@@ -6,10 +6,24 @@ import * as bcrypt from 'bcrypt';
 
 export enum Role {
   ADMIN = 'ADMIN',
-  AGENT = 'AGENT',
-  FUNDER = 'FUNDER',
   CUSTOMER = 'CUSTOMER',
   PARTNER = 'PARTNER',
+  VENDOR = 'VENDOR',
+}
+
+function normalizeRole(input: any): Role {
+  const role = typeof input === 'string' ? input.trim().toUpperCase() : '';
+
+  if (role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'FINANCE' || role === 'AGENT_MANAGER' || role === 'VIEWER') {
+    return Role.ADMIN;
+  }
+  if (role === 'PARTNER' || role === 'FUNDER') {
+    return Role.PARTNER;
+  }
+  if (role === 'VENDOR' || role === 'AGENT') {
+    return Role.VENDOR;
+  }
+  return Role.CUSTOMER;
 }
 
 @Injectable()
@@ -29,24 +43,28 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const role = normalizeRole(user.role);
+    const payload = { email: user.email, sub: user.id, role };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role,
       }
     };
   }
 
   async register(data: any) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
+    const normalizedRole = normalizeRole(data.role);
+    const role = normalizedRole === Role.ADMIN ? Role.CUSTOMER : normalizedRole;
+
     const user = await this.usersService.create({
       ...data,
       password: hashedPassword,
-      role: data.role || Role.CUSTOMER, // Default to Customer
+      role,
     });
     
     const { password, ...result } = user;

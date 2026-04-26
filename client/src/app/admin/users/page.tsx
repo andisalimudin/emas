@@ -117,10 +117,9 @@ export default function UsersPage() {
         >
           <option value="">Semua Peranan</option>
           <option value="ADMIN">Pentadbir</option>
-          <option value="AGENT">Ejen</option>
           <option value="CUSTOMER">Pelanggan</option>
           <option value="PARTNER">Rakan Kongsi</option>
-          <option value="FUNDER">Pembiaya</option>
+          <option value="VENDOR">Vendor</option>
         </select>
         <select 
           value={statusFilter}

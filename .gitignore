@@ -4,3 +4,7 @@ Thumbs.db
 .vscode
 .idea
 *.log
+*.db
+*.db-journal
+server/prisma/prisma/*.db
+server/prisma/prisma/*.db-journal
