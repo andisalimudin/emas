@@ -14,6 +14,7 @@ export interface SidebarItem {
   title: string;
   path: string;
   icon: LucideIcon;
+  roles?: string[];
 }
 
 export const customerSidebarItems: SidebarItem[] = [
@@ -21,6 +22,12 @@ export const customerSidebarItems: SidebarItem[] = [
     title: 'Papan Pemuka',
     path: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Dashboard Vendor',
+    path: '/dashboard/vendor',
+    icon: ShoppingBag,
+    roles: ['VENDOR'],
   },
   {
     title: 'Lihat Produk',

@@ -5,6 +5,56 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CartsService {
   constructor(private prisma: PrismaService) {}
 
+  private normalizeCategoryKey(input: any) {
+    return typeof input === 'string' ? input.trim().toLowerCase() : '';
+  }
+
+  private async applyCategoryPricingToCart(cart: any) {
+    const items = cart?.items || [];
+    const keys = Array.from(
+      new Set(
+        items
+          .map((it: any) => this.normalizeCategoryKey(it?.product?.category))
+          .filter((v: string) => v.length > 0)
+      )
+    );
+
+    let prices: any[] = [];
+    if (keys.length > 0) {
+      const model = (this.prisma as any).categoryGoldPrice;
+      if (!model) return cart;
+      try {
+        prices = await model.findMany({
+          where: { key: { in: keys } },
+          select: { key: true, pricePerGram: true },
+        });
+      } catch {
+        return cart;
+      }
+    }
+
+    const byKey = new Map<string, number>();
+    for (const p of prices || []) {
+      if (p?.key) byKey.set(p.key, Number(p.pricePerGram || 0));
+    }
+
+    const newItems = items.map((it: any) => {
+      const product = it?.product;
+      if (!product) return it;
+      const key = this.normalizeCategoryKey(product?.category);
+      const pricePerGram = byKey.get(key);
+      if (typeof pricePerGram === 'number' && Number.isFinite(pricePerGram) && pricePerGram > 0) {
+        const weight = Number(product?.weight);
+        if (Number.isFinite(weight) && weight > 0) {
+          return { ...it, product: { ...product, price: weight * pricePerGram } };
+        }
+      }
+      return it;
+    });
+
+    return { ...cart, items: newItems };
+  }
+
   async getCart(userId: string) {
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
@@ -26,7 +76,7 @@ export class CartsService {
       });
     }
 
-    return cart;
+    return this.applyCategoryPricingToCart(cart as any);
   }
 
   async addToCart(userId: string, productId: string, quantity: number) {

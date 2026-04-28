@@ -5,6 +5,11 @@ import {
   Settings, 
   ShoppingBag,
   ClipboardList,
+  HandCoins,
+  Coins,
+  BadgePercent,
+  ListChecks,
+  BookOpen,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -31,6 +36,36 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Semakan Produk Vendor',
     path: '/admin/product-submissions',
     icon: ClipboardList,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Semakan Pelaburan Partner',
+    path: '/admin/investment-submissions',
+    icon: HandCoins,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Harga Emas Kategori',
+    path: '/admin/category-gold-prices',
+    icon: Coins,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Offer Pelaburan',
+    path: '/admin/investment-offers',
+    icon: BadgePercent,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Semakan Offer Partner',
+    path: '/admin/investment-commitments',
+    icon: ListChecks,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Ledger Pelaburan',
+    path: '/admin/investment-ledger',
+    icon: BookOpen,
     roles: ['ADMIN'],
   },
   {

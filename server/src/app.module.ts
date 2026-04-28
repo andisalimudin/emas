@@ -10,6 +10,11 @@ import { SettingsModule } from './settings/settings.module';
 import { CartsModule } from './carts/carts.module';
 import { WalletModule } from './wallet/wallet.module';
 import { ProductSubmissionsModule } from './product-submissions/product-submissions.module';
+import { InvestmentSubmissionsModule } from './investment-submissions/investment-submissions.module';
+import { CategoryGoldPricesModule } from './category-gold-prices/category-gold-prices.module';
+import { InvestmentOffersModule } from './investment-offers/investment-offers.module';
+import { InvestmentLedgerModule } from './investment-ledger/investment-ledger.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -21,6 +26,11 @@ import { ProductSubmissionsModule } from './product-submissions/product-submissi
     AuthModule,
     ProductsModule,
     ProductSubmissionsModule,
+    InvestmentSubmissionsModule,
+    CategoryGoldPricesModule,
+    InvestmentOffersModule,
+    InvestmentLedgerModule,
+    UploadsModule,
     SettingsModule,
     CartsModule,
     WalletModule,

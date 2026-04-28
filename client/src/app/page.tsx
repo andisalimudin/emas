@@ -43,6 +43,8 @@ export default function LandingPage() {
   const [heroTitle, setHeroTitle] = useState('Piawaian <br />Perdagangan Emas Eksklusif');
   const [heroSubtitle, setHeroSubtitle] = useState('Platform yang selamat, berskala, dan premium untuk pelabur dan ejen serius. Sertai rangkaian elit profesional perdagangan emas.');
   const [products, setProducts] = useState<any[]>([]);
+  const [goldPrices, setGoldPrices] = useState<{ category: string; pricePerGram: number }[]>([]);
+  const [goldPricesUpdatedAt, setGoldPricesUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
@@ -57,11 +59,31 @@ export default function LandingPage() {
         if (item.key === 'heroSubtitle') setHeroSubtitle(item.value);
       });
 
+      const gold = await fetchAPI('/category-gold-prices/public');
+      setGoldPrices(Array.isArray(gold?.items) ? gold.items : []);
+      setGoldPricesUpdatedAt(gold?.lastUpdatedAt || null);
+
       // Load Products
       const productsData = await fetchAPI('/products');
       setProducts(productsData.filter((p: any) => p.isActive).slice(0, 3)); // Show top 3 active products
     } catch (err) {
       console.error('Failed to load content:', err);
+    }
+  };
+
+  const formatUpdatedAt = (value: string | null) => {
+    if (!value) return null;
+    try {
+      const d = new Date(value);
+      return new Intl.DateTimeFormat('ms-MY', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(d);
+    } catch {
+      return null;
     }
   };
 
@@ -118,6 +140,30 @@ export default function LandingPage() {
             >
               {heroSubtitle}
             </motion.p>
+
+            <motion.div variants={fadeInUp} className="max-w-2xl mx-auto">
+              <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 backdrop-blur">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <p className="text-sm text-gray-300 font-semibold">Harga Emas Terkini (RM/gram)</p>
+                  <p className="text-xs text-gray-500">
+                    {goldPricesUpdatedAt ? `Dikemas kini: ${formatUpdatedAt(goldPricesUpdatedAt)}` : 'Belum dikemas kini'}
+                  </p>
+                </div>
+
+                {goldPrices.length === 0 ? (
+                  <p className="text-sm text-gray-400 mt-3">Harga kategori belum ditetapkan dalam admin.</p>
+                ) : (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    {goldPrices.slice(0, 6).map((it) => (
+                      <div key={it.category} className="flex items-center justify-between bg-black/40 border border-white/5 rounded-xl px-4 py-2">
+                        <span className="text-gray-300">{it.category}</span>
+                        <span className="font-mono text-gold-500">RM {Number(it.pricePerGram || 0).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
             
             <motion.div 
               variants={fadeInUp}

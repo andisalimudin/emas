@@ -40,6 +40,9 @@ model User {
   payments            Payment[]
   wallet              Wallet?
   productSubmissions  ProductSubmission[]
+  investmentSubmissions InvestmentSubmission[]
+  investmentCommitments InvestmentCommitment[]
+  investmentLedgerEntries InvestmentLedgerEntry[]
 }
 
 model Wallet {
@@ -47,6 +50,9 @@ model Wallet {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
   balance   Int      @default(0) // Token balance
+  investmentTotal Float @default(0.0)
+  investmentBalance Float @default(0.0)
+  investmentGramsTotal Float @default(0.0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -61,6 +67,84 @@ model WalletTransaction {
   type      String   // "TOPUP", "DEDUCT_LOCK_PRICE", "REFUND"
   description String?
   createdAt DateTime @default(now())
+}
+
+model InvestmentSubmission {
+  id            String   @id @default(uuid())
+  partnerId      String
+  partner        User     @relation(fields: [partnerId], references: [id])
+  capitalAmount  Float    @default(0.0)
+  transferAmount Float    @default(0.0)
+  reference      String?
+  bankName       String?
+  proofUrl       String?
+  paymentDate    DateTime?
+  status         String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  adminNote      String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([partnerId])
+  @@index([status])
+}
+
+model InvestmentOffer {
+  id             String   @id @default(uuid())
+  title          String?
+  baseCategory   String   @default("Gold Bar")
+  gramsTotal     Float
+  gramsRemaining Float
+  marginPerGram  Float    @default(0.0)
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  commitments InvestmentCommitment[]
+
+  @@index([status])
+}
+
+model InvestmentCommitment {
+  id              String   @id @default(uuid())
+  offerId         String
+  offer           InvestmentOffer @relation(fields: [offerId], references: [id])
+  partnerId       String
+  partner         User     @relation(fields: [partnerId], references: [id])
+  amount          Float
+  grams           Float
+  basePricePerGram Float
+  marginPerGram   Float
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy      String?
+  approvedAt      DateTime?
+  adminNote       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([offerId])
+  @@index([partnerId])
+  @@index([status])
+}
+
+model InvestmentLedgerEntry {
+  id        String   @id @default(uuid())
+  partnerId String
+  partner   User     @relation(fields: [partnerId], references: [id])
+  type      String
+  amount    Float    @default(0.0)
+  grams     Float    @default(0.0)
+  margin    Float    @default(0.0)
+  referenceId String?
+  note      String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([partnerId])
+  @@index([type])
+  @@index([createdAt])
 }
 
 model AgentProfile {
@@ -131,6 +215,16 @@ model Category {
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model CategoryGoldPrice {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  category    String
+  pricePerGram Float   @default(0.0)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model GoldPrice {

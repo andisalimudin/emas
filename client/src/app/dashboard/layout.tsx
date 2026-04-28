@@ -52,6 +52,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
         <nav className="p-4 space-y-2">
           {customerSidebarItems.map((item) => {
+            if (item.roles && !item.roles.includes(user.role)) return null;
+
             const isActive = pathname === item.path;
             const Icon = item.icon;
 
