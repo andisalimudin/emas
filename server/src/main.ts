@@ -7,7 +7,7 @@ import * as path from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(); // Enable CORS for frontend
-  const uploadsDir = path.join(__dirname, '..', 'uploads');
+  const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
   fs.mkdirSync(uploadsDir, { recursive: true });
   app.use('/uploads', express.static(uploadsDir));
   await app.listen(process.env.PORT ?? 4000);

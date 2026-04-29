@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import * as crypto from 'crypto';
 import * as path from 'path';
 
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', '..', 'uploads');
 
 function extensionFromMime(mime: string) {
   const m = (mime || '').toLowerCase();
