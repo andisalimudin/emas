@@ -8,5 +8,4 @@ fi
 
 npx prisma migrate deploy
 
-exec node dist/main
-
+exec node dist/src/main.js
