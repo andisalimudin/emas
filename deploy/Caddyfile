@@ -1,0 +1,14 @@
+{
+  email admin@amygold.shop
+}
+
+amygold.shop www.amygold.shop {
+  encode zstd gzip
+  reverse_proxy client:3000
+}
+
+api.amygold.shop {
+  encode zstd gzip
+  reverse_proxy server:4000
+}
+
