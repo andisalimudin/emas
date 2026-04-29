@@ -1,7 +1,7 @@
 FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
@@ -10,6 +10,7 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
 COPY next.config.ts ./
+COPY postcss.config.mjs ./
 COPY tsconfig*.json ./
 COPY public ./public
 COPY src ./src
