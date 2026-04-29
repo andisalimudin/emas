@@ -18,6 +18,17 @@ export class UsersService {
     });
   }
 
+  async findByEmailOrUsername(identifier: string): Promise<User | null> {
+    const value = typeof identifier === 'string' ? identifier.trim() : '';
+    if (!value) return null;
+
+    return this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: value }, { username: value }],
+      },
+    });
+  }
+
   async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },

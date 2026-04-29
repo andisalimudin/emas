@@ -7,8 +7,22 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const adminEmail = 'admin@goldexclude.com';
-  const adminPassword = 'adminpassword123';
+  const nodeEnv = typeof process.env.NODE_ENV === 'string' ? process.env.NODE_ENV.toLowerCase() : '';
+  const isProd = nodeEnv === 'production';
+
+  const adminEmail = (process.env.DEFAULT_ADMIN_EMAIL || 'admin@goldexclude.com').trim();
+  const adminUsername = (process.env.DEFAULT_ADMIN_USERNAME || 'admin').trim();
+  const adminPassword =
+    typeof process.env.DEFAULT_ADMIN_PASSWORD === 'string' && process.env.DEFAULT_ADMIN_PASSWORD.trim()
+      ? process.env.DEFAULT_ADMIN_PASSWORD.trim()
+      : isProd
+        ? ''
+        : 'adminpassword123';
+
+  if (isProd && !adminPassword) {
+    throw new Error('DEFAULT_ADMIN_PASSWORD is required in production');
+  }
+
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const existingAdmin = await prisma.user.findUnique({
@@ -19,6 +33,7 @@ async function main() {
     const admin = await prisma.user.create({
       data: {
         email: adminEmail,
+        username: adminUsername,
         password: hashedPassword,
         name: 'Super Admin',
         role: 'ADMIN',
