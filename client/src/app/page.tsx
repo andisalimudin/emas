@@ -95,7 +95,9 @@ export default function LandingPage() {
       <nav className="fixed w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold tracking-tighter">
-            GOLD<span className="text-gold-500">EXCLUDE</span>
+            <span className="bg-gradient-to-r from-gold-400 via-yellow-200 to-gold-500 bg-clip-text text-transparent">
+              AmyEmpire
+            </span>
           </Link>
           
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
@@ -361,7 +363,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="space-y-4">
               <Link href="/" className="text-2xl font-bold tracking-tighter">
-                GOLD<span className="text-gold-500">EXCLUDE</span>
+                <span className="bg-gradient-to-r from-gold-400 via-yellow-200 to-gold-500 bg-clip-text text-transparent">
+                  AmyEmpire
+                </span>
               </Link>
               <p className="text-gray-500 text-sm">
                 Platform utama untuk perdagangan emas yang selamat dan eksklusif.
