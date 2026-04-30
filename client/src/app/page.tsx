@@ -388,7 +388,7 @@ export default function LandingPage() {
           </div>
           
           <div className="pt-8 border-t border-white/5 text-center text-sm text-gray-600">
-            &copy; {new Date().getFullYear()} GoldExclude Trading. Hak cipta terpelihara.
+            &copy; {new Date().getFullYear()} AmyEmpire. Hak cipta terpelihara.
           </div>
         </div>
       </footer>

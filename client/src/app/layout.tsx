@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GoldExclude | Dagangan Emas Eksklusif",
+  title: "AmyEmpire | Dagangan Emas Eksklusif",
   description: "Platform Dagangan Emas Premium untuk Ejen dan Pembiaya",
 };
 

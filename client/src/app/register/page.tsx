@@ -39,7 +39,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-zinc-900 p-8 rounded-2xl border border-white/10 shadow-xl">
         <h2 className="text-3xl font-bold text-center mb-2">Cipta Akaun</h2>
-        <p className="text-gray-400 text-center mb-8">Sertai platform GoldExclude</p>
+        <p className="text-gray-400 text-center mb-8">Sertai platform AmyEmpire</p>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-6 text-sm">

@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('products')
@@ -9,8 +8,8 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  create(@Body() data: Prisma.ProductCreateInput) {
-    return this.productsService.create(data);
+  create(@Body() body: any) {
+    return this.productsService.create(body);
   }
 
   @Get()
@@ -25,10 +24,10 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() data: Prisma.ProductUpdateInput) {
+  async update(@Param('id') id: string, @Body() body: any) {
     try {
-      console.log(`Updating product ${id} with data:`, data);
-      return await this.productsService.update(id, data);
+      console.log(`Updating product ${id} with data:`, body);
+      return await this.productsService.update(id, body);
     } catch (error) {
       console.error(`Error updating product ${id}:`, error);
       throw error;

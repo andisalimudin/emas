@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchAPI } from '@/lib/api';
+import { API_URL, fetchAPI } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,6 +16,8 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUploading, setImageUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -27,7 +29,6 @@ export default function EditProductPage() {
     stock: 0,
     isActive: true,
     hidePrice: false,
-    imageUrl: '',
   });
 
   useEffect(() => {
@@ -49,8 +50,14 @@ export default function EditProductPage() {
         stock: data.stock || 0,
         isActive: data.isActive,
         hidePrice: data.hidePrice,
-        imageUrl: data.imageUrl || '',
       });
+      const urls =
+        Array.isArray(data?.images) && data.images.length > 0
+          ? data.images.map((i: any) => i?.url).filter((u: any) => typeof u === 'string' && u)
+          : data?.imageUrl
+            ? [data.imageUrl]
+            : [];
+      setImageUrls(urls.slice(0, 5));
     } catch (err: any) {
       setError(err.message || 'Gagal memuatkan produk');
     } finally {
@@ -90,6 +97,7 @@ export default function EditProductPage() {
         },
         body: JSON.stringify({
           ...formData,
+          imageUrls,
           weight: parseFloat(formData.weight.toString()),
           price: parseFloat(formData.price.toString()),
           stock: parseInt(formData.stock.toString()),
@@ -104,6 +112,47 @@ export default function EditProductPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleImageFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+
+    if (files.length === 0) return;
+    if (imageUrls.length + files.length > 5) {
+      setError('Maksimum 5 gambar untuk setiap produk');
+      return;
+    }
+
+    setImageUploading(true);
+    setError('');
+
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch(`${API_URL}/uploads`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || 'Gagal upload gambar');
+        if (typeof data?.url === 'string' && data.url) uploaded.push(data.url);
+      }
+      setImageUrls((prev) => [...prev, ...uploaded].slice(0, 5));
+    } catch (err: any) {
+      setError(err.message || 'Gagal upload gambar');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const removeImage = (url: string) => {
+    setImageUrls((prev) => prev.filter((u) => u !== url));
   };
 
   if (loading) {
@@ -191,13 +240,41 @@ export default function EditProductPage() {
             />
           </div>
 
-          <Input
-              label="URL Imej"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-            />
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Gambar Produk (maksimum 5)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageFilesChange}
+                disabled={imageUploading || imageUrls.length >= 5}
+                className="block w-full text-sm text-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-700"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {imageUploading ? 'Sedang upload...' : `${imageUrls.length}/5 gambar dipilih`}
+              </p>
+            </div>
+
+            {imageUrls.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {imageUrls.map((url) => (
+                  <div key={url} className="relative border border-white/10 rounded-lg overflow-hidden bg-black">
+                    <img src={url} alt="Gambar produk" className="w-full h-28 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(url)}
+                      className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded"
+                    >
+                      Buang
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Penerangan</label>

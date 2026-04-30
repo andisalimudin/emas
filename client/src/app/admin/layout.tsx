@@ -50,7 +50,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       >
         <div className="flex h-16 items-center justify-between px-6 border-b border-white/10">
-          <h1 className="text-xl font-bold text-gold-500">GoldExclude</h1>
+          <h1 className="text-xl font-extrabold tracking-wide">
+            <span className="bg-gradient-to-r from-gold-400 via-yellow-200 to-gold-500 bg-clip-text text-transparent">
+              AmyEmpire
+            </span>
+          </h1>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-400 hover:text-white">
             <X size={24} />
           </button>
