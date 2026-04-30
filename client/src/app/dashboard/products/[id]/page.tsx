@@ -25,6 +25,8 @@ const getPlaceholderImage = (text: string) => {
   return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
+const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('/uploads/');
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -115,12 +117,18 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Product Image */}
         <div className="aspect-square relative bg-zinc-900 rounded-2xl overflow-hidden border border-white/10">
+          {(() => {
+            const src = product.imageUrl || getPlaceholderImage(product.name);
+            return (
           <Image 
-            src={product.imageUrl || getPlaceholderImage(product.name)} 
+            src={src} 
             alt={product.name} 
             fill 
+            unoptimized={isUploadsSrc(src)}
             className="object-cover"
           />
+            );
+          })()}
         </div>
 
         {/* Product Info */}

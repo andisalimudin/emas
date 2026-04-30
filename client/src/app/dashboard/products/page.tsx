@@ -26,6 +26,8 @@ const getPlaceholderImage = (text: string) => {
   return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
+const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('/uploads/');
+
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
@@ -131,12 +133,18 @@ export default function ProductsPage() {
             <div key={product.id} className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden group hover:border-gold-500/30 transition-all duration-300">
               <Link href={`/dashboard/products/${product.id}`} className="block">
                 <div className="aspect-square relative bg-zinc-800 cursor-pointer">
+                  {(() => {
+                    const src = product.imageUrl || getPlaceholderImage(product.name);
+                    return (
                   <Image 
-                    src={product.imageUrl || getPlaceholderImage(product.name)} 
+                    src={src} 
                     alt={product.name} 
                     fill 
+                    unoptimized={isUploadsSrc(src)}
                     className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                   />
+                    );
+                  })()}
                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-medium text-gold-400 border border-white/10">
                     {product.purity}
                   </div>

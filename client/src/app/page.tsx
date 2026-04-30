@@ -39,6 +39,8 @@ const getPlaceholderImage = (text: string) => {
   return `data:image/svg+xml;base64,${typeof window !== 'undefined' ? window.btoa(svg) : Buffer.from(svg).toString('base64')}`;
 };
 
+const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('/uploads/');
+
 export default function LandingPage() {
   const [heroTitle, setHeroTitle] = useState('Piawaian <br />Perdagangan Emas Eksklusif');
   const [heroSubtitle, setHeroSubtitle] = useState('Platform yang selamat, berskala, dan premium untuk pelabur dan ejen serius. Sertai rangkaian elit profesional perdagangan emas.');
@@ -228,12 +230,18 @@ export default function LandingPage() {
                 >
                   <div className="aspect-square relative bg-zinc-800">
                     <div className="absolute inset-0 flex items-center justify-center text-gold-500/20">
+                      {(() => {
+                        const src = product.imageUrl || getPlaceholderImage(product.name);
+                        return (
                       <Image 
-                        src={product.imageUrl || getPlaceholderImage(product.name)} 
+                        src={src} 
                         alt={product.name} 
                         fill 
+                        unoptimized={isUploadsSrc(src)}
                         className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                       />
+                        );
+                      })()}
                     </div>
                     <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs font-medium text-gold-400">
                       {product.purity} Ketulenan

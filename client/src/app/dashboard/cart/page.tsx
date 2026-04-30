@@ -7,6 +7,8 @@ import { Trash, Minus, Plus, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('/uploads/');
+
 export default function CartPage() {
   const [cart, setCart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -112,7 +114,7 @@ export default function CartPage() {
                 {/* Image Placeholder */}
                 <div className="absolute inset-0 flex items-center justify-center text-gold-500/20 font-bold">
                    {item.product.imageUrl ? (
-                      <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
+                      <Image src={item.product.imageUrl} alt={item.product.name} fill unoptimized={isUploadsSrc(item.product.imageUrl)} className="object-cover" />
                    ) : (
                       <span className="text-xs text-center p-2">{item.product.name}</span>
                    )}
