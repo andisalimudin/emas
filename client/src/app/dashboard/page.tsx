@@ -112,7 +112,7 @@ export default function UserDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className={clsx('grid grid-cols-1 md:grid-cols-2 gap-6', isPartner ? 'lg:grid-cols-3' : 'lg:grid-cols-4')}>
         <StatCard
           title={isPartner ? "Jumlah Deposit Pelaburan (Diluluskan)" : "Baki Dompet (Token)"}
           value={
@@ -124,18 +124,13 @@ export default function UserDashboard() {
           }
           icon={isPartner ? CreditCard : WalletIcon}
         />
-        <StatCard
-          title={isPartner ? "Baki Deposit Pelaburan" : "Transaksi Dompet"}
-          value={
-            loading
-              ? '...'
-              : isPartner
-                ? formatMoneyMYR(wallet?.investmentBalance)
-                : String((wallet?.transactions || []).length)
-          }
-          icon={Clock}
-          isWarning={isPartner}
-        />
+        {!isPartner && (
+          <StatCard
+            title="Transaksi Dompet"
+            value={loading ? '...' : String((wallet?.transactions || []).length)}
+            icon={Clock}
+          />
+        )}
         <StatCard
           title={isPartner ? "Jumlah Pelaburan (Diluluskan)" : "Pegangan Emas"}
           value={loading ? '...' : isPartner ? formatGrams(wallet?.investmentGramsTotal) : '-'}

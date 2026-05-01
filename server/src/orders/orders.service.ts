@@ -224,13 +224,18 @@ export class OrdersService {
       if (!Number.isFinite(requiredAmount) || requiredAmount <= 0) {
         throw new BadRequestException('Jumlah pesanan tidak sah');
       }
-      if (!wallet || Number(wallet.investmentBalance || 0) < requiredAmount) {
+      const currentTotal = Number(wallet?.investmentTotal || 0);
+      const currentBalance = Number(wallet?.investmentBalance || 0);
+      if (!wallet || currentTotal < requiredAmount) {
         throw new BadRequestException('Baki deposit pelaburan tidak mencukupi');
       }
 
       await tx.wallet.update({
         where: { userId },
-        data: { investmentBalance: { decrement: requiredAmount } },
+        data: {
+          investmentTotal: { decrement: requiredAmount },
+          investmentBalance: Math.max(0, currentBalance - requiredAmount),
+        },
       });
       await (tx as any).investmentLedgerEntry.create({
         data: {

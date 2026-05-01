@@ -149,7 +149,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const walletBalance = Number(wallet?.investmentBalance || 0);
+  const walletBalance = Number(wallet?.investmentTotal || 0);
   const ewalletDisabled = walletBalance < requiredAmount;
 
   return (
@@ -227,7 +227,7 @@ export default function CheckoutPage() {
               >
                 <div className="flex items-center gap-3 text-white font-semibold">
                   <CreditCard size={18} className="text-gold-500" />
-                  E-Wallet (Deposit Pelaburan)
+                  E-Wallet (Jumlah Deposit Pelaburan)
                 </div>
                 <div className="text-sm text-gray-400 mt-2">
                   Baki: <span className="text-white">{formatMoneyMYR(walletBalance)}</span> • Diperlukan:{' '}
