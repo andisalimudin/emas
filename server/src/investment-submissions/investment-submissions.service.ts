@@ -65,11 +65,13 @@ export class InvestmentSubmissionsService {
         title: 'Permohonan Pelaburan Dihantar',
         message: `Permohonan pelaburan anda telah dihantar dan sedang menunggu semakan admin.`,
         type: 'INVESTMENT',
+        actorUserId: partnerId,
       });
       await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
         title: 'Permohonan Pelaburan Baru',
         message: `Ada permohonan pelaburan baru daripada partner. Sila semak di dashboard admin.`,
         type: 'INVESTMENT',
+        actorUserId: partnerId,
       });
       return created;
     } catch (err) {
@@ -179,6 +181,7 @@ export class InvestmentSubmissionsService {
           title: 'Pelaburan Diluluskan',
           message: `Permohonan pelaburan anda telah diluluskan. Amaun: RM${transferAmount.toFixed(2)}.`,
           type: 'INVESTMENT',
+          actorUserId: partnerId,
         });
       }
       return updated;
@@ -218,6 +221,7 @@ export class InvestmentSubmissionsService {
         title: 'Pelaburan Ditolak',
         message: `Permohonan pelaburan anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
         type: 'INVESTMENT',
+        actorUserId: submission.partnerId,
       });
       return updated;
     } catch (err) {

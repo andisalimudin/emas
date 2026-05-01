@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TelegramService } from './telegram.service';
 
@@ -13,8 +13,10 @@ export class TelegramController {
       throw new ForbiddenException('Akses tidak dibenarkan');
     }
     const text = typeof body?.text === 'string' ? body.text : '';
-    await this.telegramService.sendMessage(text || 'Ujian notifikasi Telegram');
-    return { ok: true };
+    try {
+      return await this.telegramService.sendMessage(text || 'Ujian notifikasi Telegram');
+    } catch (err: any) {
+      throw new BadRequestException(err?.message || 'Gagal hantar Telegram');
+    }
   }
 }
-

@@ -17,11 +17,32 @@ export class NotificationsService {
     private telegramService: TelegramService
   ) {}
 
-  private formatTelegramText(input: { title: string; message: string; type: string; userId?: string; targets?: string[] }) {
+  private async getUserSummary(userId: string) {
+    const id = typeof userId === 'string' ? userId.trim() : '';
+    if (!id) return null;
+    try {
+      return await this.prisma.user.findUnique({
+        where: { id },
+        select: { id: true, name: true, username: true, role: true, email: true },
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  private formatTelegramText(input: {
+    title: string;
+    message: string;
+    type: string;
+    actor?: { id?: string; name?: string; username?: string | null; role?: string; email?: string | null } | null;
+    targets?: string[];
+  }) {
     const title = String(input?.title || '').trim();
     const message = String(input?.message || '').trim();
     const type = String(input?.type || '').trim().toUpperCase();
-    const userId = input?.userId ? String(input.userId).trim() : '';
+    const actorName = String(input?.actor?.name || '').trim();
+    const actorUsername = String(input?.actor?.username || '').trim();
+    const actorRole = String(input?.actor?.role || '').trim();
     const targets = Array.isArray(input?.targets) ? input.targets.filter((x) => typeof x === 'string' && x.trim()) : [];
 
     const now = new Date();
@@ -29,9 +50,10 @@ export class NotificationsService {
 
     const lines = [
       `[${type || 'SYSTEM'}] ${title}`,
+      actorName ? `User: ${actorName}${actorRole ? ` (${actorRole})` : ''}` : null,
+      !actorName && actorUsername ? `User: ${actorUsername}${actorRole ? ` (${actorRole})` : ''}` : null,
       message,
-      userId ? `User: ${userId}` : null,
-      !userId && targets.length ? `Targets: ${targets.length}` : null,
+      targets.length ? `Targets: ${targets.length}` : null,
       when ? `Time: ${when}` : null,
     ].filter(Boolean) as string[];
 
@@ -123,7 +145,7 @@ export class NotificationsService {
   async createForUser(
     client: PrismaClientLike,
     userId: string,
-    input: { title: string; message: string; type: string }
+    input: { title: string; message: string; type: string; actorUserId?: string }
   ) {
     const title = typeof input?.title === 'string' ? input.title.trim() : '';
     const message = typeof input?.message === 'string' ? input.message.trim() : '';
@@ -145,8 +167,10 @@ export class NotificationsService {
         },
       });
       if (client === this.prisma) {
+        const actorId = typeof input?.actorUserId === 'string' && input.actorUserId.trim() ? input.actorUserId.trim() : userId;
+        const actor = await this.getUserSummary(actorId);
         await this.telegramService.sendMessageSafe(
-          this.formatTelegramText({ title, message, type, userId })
+          this.formatTelegramText({ title, message, type, actor })
         );
       }
       return created;
@@ -158,7 +182,7 @@ export class NotificationsService {
   async createForUsers(
     client: PrismaClientLike,
     userIds: string[],
-    input: { title: string; message: string; type: string }
+    input: { title: string; message: string; type: string; actorUserId?: string }
   ) {
     const ids = Array.isArray(userIds) ? userIds.filter((x) => typeof x === 'string' && x.trim()) : [];
     if (!ids.length) return { ok: true, created: 0 };
@@ -183,8 +207,10 @@ export class NotificationsService {
         })),
       });
       if (client === this.prisma) {
+        const actorId = typeof input?.actorUserId === 'string' && input.actorUserId.trim() ? input.actorUserId.trim() : '';
+        const actor = actorId ? await this.getUserSummary(actorId) : null;
         await this.telegramService.sendMessageSafe(
-          this.formatTelegramText({ title, message, type, targets: ids })
+          this.formatTelegramText({ title, message, type, actor, targets: ids })
         );
       }
       return { ok: true, created: Number(res?.count || 0) };
@@ -196,7 +222,7 @@ export class NotificationsService {
   async createForRole(
     client: PrismaClientLike,
     role: string,
-    input: { title: string; message: string; type: string }
+    input: { title: string; message: string; type: string; actorUserId?: string }
   ) {
     const normalizedRole = typeof role === 'string' ? role.trim().toUpperCase() : '';
     if (!normalizedRole) return { ok: true, created: 0 };

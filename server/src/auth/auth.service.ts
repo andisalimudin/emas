@@ -2,6 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { NotificationsService } from '../notifications/notifications.service';
+import { PrismaService } from '../prisma/prisma.service';
 // import { Role } from '@prisma/client'; // Removed as enum is not supported in SQLite
 
 export enum Role {
@@ -31,6 +33,8 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async validateUser(identifier: string, pass: string): Promise<any> {
@@ -69,6 +73,20 @@ export class AuthService {
     });
     
     const { password, ...result } = user;
+
+    await this.notificationsService.createForUser(this.prisma as any, user.id, {
+      title: 'Selamat Datang ke AmyEmpire',
+      message: 'Akaun anda berjaya didaftarkan.',
+      type: 'USER',
+      actorUserId: user.id,
+    });
+    await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
+      title: 'Pendaftaran Baru',
+      message: `Pendaftaran pengguna baru: ${user.name}`,
+      type: 'USER',
+      actorUserId: user.id,
+    });
+
     return result;
   }
 }

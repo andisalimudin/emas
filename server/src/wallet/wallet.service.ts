@@ -61,6 +61,7 @@ export class WalletService {
       title: 'Top Up E-Wallet',
       message: `Top up berjaya: +${amount} tokens ditambah ke E-Wallet anda.`,
       type: 'WALLET',
+      actorUserId: userId,
     });
     return updatedWallet;
   }
@@ -93,6 +94,7 @@ export class WalletService {
       title: 'Transaksi E-Wallet',
       message: `Potongan berjaya: -${tokens} tokens. ${description ? `Butiran: ${description}` : ''}`.trim(),
       type: 'WALLET',
+      actorUserId: userId,
     });
     return updatedWallet;
   }

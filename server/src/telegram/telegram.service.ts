@@ -50,9 +50,11 @@ export class TelegramService {
       }),
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.ok === false) {
-      throw new Error('Telegram sendMessage gagal');
+    const data = await res.json().catch(() => null);
+    if (!res.ok || (data as any)?.ok === false) {
+      const desc = (data as any)?.description || res.statusText || `HTTP ${res.status}`;
+      const code = (data as any)?.error_code;
+      throw new Error(`Telegram sendMessage gagal: ${code ? `${code} ` : ''}${desc}`.trim());
     }
     return { ok: true };
   }

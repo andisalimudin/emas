@@ -32,11 +32,13 @@ export class ProductSubmissionsService {
       title: 'Produk Dihantar',
       message: `Produk anda telah dihantar untuk semakan admin.`,
       type: 'PRODUCT',
+      actorUserId: vendorId,
     });
     await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
       title: 'Semakan Produk Vendor',
       message: `Ada produk vendor baru untuk disemak.`,
       type: 'PRODUCT',
+      actorUserId: vendorId,
     });
     return created;
   }
@@ -105,6 +107,7 @@ export class ProductSubmissionsService {
       title: 'Produk Diluluskan',
       message: `Produk anda telah diluluskan dan diterbitkan.`,
       type: 'PRODUCT',
+      actorUserId: submission.vendorId,
     });
     return updated;
   }
@@ -138,6 +141,7 @@ export class ProductSubmissionsService {
       title: 'Produk Ditolak',
       message: `Produk anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
       type: 'PRODUCT',
+      actorUserId: submission.vendorId,
     });
     return updated;
   }

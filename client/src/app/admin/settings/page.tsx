@@ -86,14 +86,18 @@ export default function SettingsPage() {
     setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      await fetchAPI('/telegram/test', {
+      const res: any = await fetchAPI('/telegram/test', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ text: telegramTestText }),
       });
-      setSuccess('Ujian Telegram berjaya dihantar!');
+      if (res?.skipped) {
+        setError('Telegram belum dikonfigurasi. Sila isi Bot Token dan Chat ID.');
+      } else {
+        setSuccess('Ujian Telegram berjaya dihantar!');
+      }
     } catch (err: any) {
       setError(err.message || 'Gagal hantar ujian Telegram');
     } finally {

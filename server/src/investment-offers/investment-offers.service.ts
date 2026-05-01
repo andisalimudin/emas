@@ -251,11 +251,13 @@ export class InvestmentOffersService {
         title: 'Komitmen Pelaburan Dihantar',
         message: `Komitmen pelaburan anda telah dihantar dan sedang menunggu kelulusan admin.`,
         type: 'INVESTMENT',
+        actorUserId: partnerId,
       });
       await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
         title: 'Komitmen Pelaburan Baru',
         message: `Ada komitmen pelaburan baru untuk disemak.`,
         type: 'INVESTMENT',
+        actorUserId: partnerId,
       });
       return res;
     } catch (err) {
@@ -377,6 +379,7 @@ export class InvestmentOffersService {
           title: 'Komitmen Pelaburan Diluluskan',
           message: `Komitmen pelaburan anda telah diluluskan. Gram: ${grams}, Amaun: RM${amt.toFixed(2)}.`,
           type: 'INVESTMENT',
+          actorUserId: partnerId,
         });
       }
       return res;
@@ -430,6 +433,7 @@ export class InvestmentOffersService {
           title: 'Komitmen Pelaburan Ditolak',
           message: `Komitmen pelaburan anda telah ditolak.${note ? ` Nota admin: ${note}` : ''}`.trim(),
           type: 'INVESTMENT',
+          actorUserId: partnerId,
         });
       }
       return res;
@@ -483,6 +487,7 @@ export class InvestmentOffersService {
         title: 'Offer Pelaburan Baru',
         message: `Offer pelaburan baru telah ditambah. Sila semak di E-Wallet.`,
         type: 'INVESTMENT',
+        actorUserId: adminId,
       });
       return created;
     } catch (err) {
