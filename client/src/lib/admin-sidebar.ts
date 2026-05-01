@@ -7,6 +7,7 @@ import {
   ClipboardList,
   HandCoins,
   Coins,
+  CreditCard,
   BadgePercent,
   ListChecks,
   BookOpen,
@@ -49,6 +50,12 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Semakan Pelaburan Partner',
     path: '/admin/investment-submissions',
     icon: HandCoins,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Semakan Pembayaran',
+    path: '/admin/payments',
+    icon: CreditCard,
     roles: ['ADMIN'],
   },
   {

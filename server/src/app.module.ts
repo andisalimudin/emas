@@ -18,6 +18,8 @@ import { UploadsModule } from './uploads/uploads.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { MeModule } from './me/me.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminDashboardModule,
     MeModule,
     NotificationsModule,
+    OrdersModule,
+    PaymentsModule,
     SettingsModule,
     CartsModule,
     WalletModule,
