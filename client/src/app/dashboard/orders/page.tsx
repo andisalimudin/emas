@@ -22,6 +22,13 @@ function statusLabel(orderStatus: string, paymentStatus?: string) {
   return { text: 'Belum Bayar', cls: 'bg-zinc-500/10 text-gray-300 border-white/10' };
 }
 
+function shippingLabel(shippingStatus?: string) {
+  const ss = String(shippingStatus || 'PENDING').toUpperCase();
+  if (ss === 'DELIVERED') return { text: 'Dihantar', cls: 'bg-green-500/10 text-green-400 border-green-500/20' };
+  if (ss === 'SHIPPED') return { text: 'Dalam Penghantaran', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+  return { text: 'Menunggu', cls: 'bg-zinc-500/10 text-gray-300 border-white/10' };
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +80,7 @@ export default function OrdersPage() {
         <div className="space-y-4">
           {orders.map((o) => {
             const badge = statusLabel(o?.status, o?.payment?.status);
+            const ship = shippingLabel(o?.shippingStatus);
             return (
               <Link
                 key={o.id}
@@ -85,11 +93,21 @@ export default function OrdersPage() {
                     <div className="text-sm text-gray-400 mt-1">
                       {new Date(o.createdAt).toLocaleString('ms-MY')} • {Array.isArray(o.items) ? o.items.length : 0} item
                     </div>
+                    <div className="text-sm text-gray-400 mt-1">
+                      Penghantaran: <span className="text-gray-200">{ship.text}</span>
+                      {o?.trackingNumber ? (
+                        <>
+                          {' '}
+                          • Tracking: <span className="text-gray-200">{String(o.trackingNumber)}</span>
+                        </>
+                      ) : null}
+                    </div>
                     <div className="text-gold-500 font-mono mt-2">{formatMoneyMYR(o.totalAmount)}</div>
                   </div>
 
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${badge.cls}`}>{badge.text}</span>
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${ship.cls}`}>{ship.text}</span>
                     <ChevronRight size={18} className="text-gray-500" />
                   </div>
                 </div>

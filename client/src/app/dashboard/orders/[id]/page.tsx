@@ -5,6 +5,7 @@ import { API_URL, fetchAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, CreditCard, Landmark, Upload } from 'lucide-react';
 
 function formatMoneyMYR(value: any) {
@@ -12,8 +13,9 @@ function formatMoneyMYR(value: any) {
   return `RM ${n.toLocaleString('ms-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  const orderId = params?.id;
+export default function OrderDetailPage() {
+  const routeParams = useParams<{ id: string }>();
+  const orderId = routeParams?.id;
   const [order, setOrder] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -275,6 +277,14 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             <div className="flex justify-between mt-2">
               <span className="text-gray-400">Pembayaran</span>
               <span>{String(order.payment?.status || '—').toUpperCase()}</span>
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-gray-400">Penghantaran</span>
+              <span>{String(order.shippingStatus || 'PENDING').toUpperCase()}</span>
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-gray-400">Tracking</span>
+              <span>{order.trackingNumber ? String(order.trackingNumber) : '—'}</span>
             </div>
             {order.payment?.proofUrl && (
               <div className="mt-3">

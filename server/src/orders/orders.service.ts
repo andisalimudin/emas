@@ -9,6 +9,16 @@ export class OrdersService {
     private readonly notificationsService: NotificationsService
   ) {}
 
+  private normalizeEnum(input: any) {
+    return typeof input === 'string' ? input.trim().toUpperCase() : '';
+  }
+
+  private normalizeTracking(input: any) {
+    if (input === null || input === undefined) return undefined;
+    const s = String(input).trim();
+    return s.length ? s : null;
+  }
+
   private normalizeCategoryKey(input: any) {
     return typeof input === 'string' ? input.trim().toLowerCase() : '';
   }
@@ -387,6 +397,70 @@ export class OrdersService {
       message: `Bukti pembayaran baharu untuk semakan (Pesanan ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: userId,
+    });
+
+    return updated;
+  }
+
+  async adminUpdateOrder(
+    orderId: string,
+    adminId: string,
+    input: { status?: string; shippingStatus?: string; trackingNumber?: string }
+  ) {
+    const nextStatus = this.normalizeEnum(input?.status);
+    const nextShippingStatus = this.normalizeEnum(input?.shippingStatus);
+    const trackingNumber = this.normalizeTracking(input?.trackingNumber);
+
+    const allowedOrderStatuses = new Set(['PENDING_PAYMENT', 'PAYMENT_SUBMITTED', 'PAYMENT_REJECTED', 'PAID', 'CANCELLED']);
+    const allowedShippingStatuses = new Set(['PENDING', 'SHIPPED', 'DELIVERED']);
+
+    if (nextStatus && !allowedOrderStatuses.has(nextStatus)) {
+      throw new BadRequestException('Status order tidak sah');
+    }
+    if (nextShippingStatus && !allowedShippingStatuses.has(nextShippingStatus)) {
+      throw new BadRequestException('Status penghantaran tidak sah');
+    }
+    if (!nextStatus && !nextShippingStatus && trackingNumber === undefined) {
+      throw new BadRequestException('Tiada perubahan untuk dikemaskini');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { payment: true },
+      });
+      if (!order) throw new NotFoundException('Pesanan tidak dijumpai');
+
+      if (nextShippingStatus === 'SHIPPED' && !trackingNumber && !order.trackingNumber) {
+        throw new BadRequestException('Tracking number diperlukan untuk status SHIPPED');
+      }
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: nextStatus ? nextStatus : undefined,
+          shippingStatus: nextShippingStatus ? nextShippingStatus : undefined,
+          trackingNumber: trackingNumber === undefined ? undefined : trackingNumber,
+        },
+        include: {
+          items: { include: { product: true } },
+          payment: true,
+          shippingAddress: true,
+          user: { select: { id: true, name: true, email: true, username: true, role: true } },
+        },
+      });
+    });
+
+    const pieces: string[] = [];
+    if (nextStatus) pieces.push(`Status: ${nextStatus}`);
+    if (nextShippingStatus) pieces.push(`Penghantaran: ${nextShippingStatus}`);
+    if (trackingNumber !== undefined) pieces.push(`Tracking: ${trackingNumber || '-'}`);
+
+    await this.notificationsService.createForUser(this.prisma, updated.userId, {
+      title: 'Kemaskini Pesanan',
+      message: `Pesanan (ID: ${updated.id}) telah dikemaskini. ${pieces.join(' • ')}`.trim(),
+      type: 'ORDER',
+      actorUserId: adminId,
     });
 
     return updated;

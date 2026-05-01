@@ -25,7 +25,8 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('PENDING');
-  const [methodFilter, setMethodFilter] = useState('MANUAL_TRANSFER');
+  const [methodFilter, setMethodFilter] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -33,6 +34,7 @@ export default function AdminPaymentsPage() {
 
   const load = async () => {
     setLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem('token');
       const qs = new URLSearchParams();
@@ -43,6 +45,9 @@ export default function AdminPaymentsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setItems(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      setItems([]);
+      setError(e?.message || 'Gagal memuatkan pembayaran');
     } finally {
       setLoading(false);
     }
@@ -50,12 +55,15 @@ export default function AdminPaymentsPage() {
 
   const approve = async (id: string) => {
     setActionLoadingId(id);
+    setError(null);
     try {
       await fetchAPI(`/payments/${id}/approve`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       load();
+    } catch (e: any) {
+      setError(e?.message || 'Gagal meluluskan pembayaran');
     } finally {
       setActionLoadingId(null);
     }
@@ -64,12 +72,15 @@ export default function AdminPaymentsPage() {
   const reject = async (id: string) => {
     if (!window.confirm('Tolak pembayaran ini?')) return;
     setActionLoadingId(id);
+    setError(null);
     try {
       await fetchAPI(`/payments/${id}/reject`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       load();
+    } catch (e: any) {
+      setError(e?.message || 'Gagal menolak pembayaran');
     } finally {
       setActionLoadingId(null);
     }
@@ -85,6 +96,7 @@ export default function AdminPaymentsPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-black border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gold-500"
           >
+            <option value="">Semua Status</option>
             <option value="PENDING">Menunggu</option>
             <option value="APPROVED">Diluluskan</option>
             <option value="REJECTED">Ditolak</option>
@@ -94,6 +106,7 @@ export default function AdminPaymentsPage() {
             onChange={(e) => setMethodFilter(e.target.value)}
             className="bg-black border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gold-500"
           >
+            <option value="">Semua Kaedah</option>
             <option value="MANUAL_TRANSFER">Transfer Bank</option>
             <option value="EWALLET">E-Wallet</option>
           </select>
@@ -102,6 +115,8 @@ export default function AdminPaymentsPage() {
           </Button>
         </div>
       </div>
+
+      {error && <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-200">{error}</div>}
 
       <div className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden">
         <table className="w-full text-left text-sm text-gray-400">
@@ -188,4 +203,3 @@ export default function AdminPaymentsPage() {
     </div>
   );
 }
-

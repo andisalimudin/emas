@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OrdersService } from './orders.service';
 
@@ -32,6 +32,19 @@ export class OrdersController {
     return this.ordersService.getOrderById(id, userId, role);
   }
 
+  @Patch(':id')
+  async adminUpdateOrder(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    if (req?.user?.role !== 'ADMIN') {
+      throw new BadRequestException('Akses tidak dibenarkan');
+    }
+    const adminId = this.getUserId(req);
+    return this.ordersService.adminUpdateOrder(id, adminId, {
+      status: body?.status,
+      shippingStatus: body?.shippingStatus,
+      trackingNumber: body?.trackingNumber,
+    });
+  }
+
   @Post('checkout')
   async checkout(@Req() req: any, @Body() body: any) {
     const userId = this.getUserId(req);
@@ -55,4 +68,3 @@ export class OrdersController {
     });
   }
 }
-

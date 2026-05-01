@@ -4,6 +4,7 @@ import {
   Users, 
   Settings, 
   ShoppingBag,
+  Package,
   ClipboardList,
   HandCoins,
   Coins,
@@ -38,6 +39,12 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Pengurusan Pengguna',
     path: '/admin/users',
     icon: Users,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Senarai Order',
+    path: '/admin/orders',
+    icon: Package,
     roles: ['ADMIN'],
   },
   {
