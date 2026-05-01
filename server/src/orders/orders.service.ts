@@ -4,8 +4,6 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class OrdersService {
-  private readonly TOKEN_VALUE_RM = 2;
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService
@@ -222,21 +220,27 @@ export class OrdersService {
       if ((order.status || '').toUpperCase() === 'PAID') throw new BadRequestException('Pesanan sudah dibayar');
 
       const wallet = await tx.wallet.findUnique({ where: { userId } });
-      const requiredTokens = Math.ceil(Number(order.totalAmount || 0) / this.TOKEN_VALUE_RM);
-      if (!wallet || Number(wallet.balance || 0) < requiredTokens) {
-        throw new BadRequestException('Baki token tidak mencukupi');
+      const requiredAmount = Number(order.totalAmount || 0);
+      if (!Number.isFinite(requiredAmount) || requiredAmount <= 0) {
+        throw new BadRequestException('Jumlah pesanan tidak sah');
+      }
+      if (!wallet || Number(wallet.investmentBalance || 0) < requiredAmount) {
+        throw new BadRequestException('Baki deposit pelaburan tidak mencukupi');
       }
 
       await tx.wallet.update({
         where: { userId },
-        data: { balance: { decrement: requiredTokens } },
+        data: { investmentBalance: { decrement: requiredAmount } },
       });
-      await tx.walletTransaction.create({
+      await (tx as any).investmentLedgerEntry.create({
         data: {
-          walletId: wallet.id,
-          amount: -requiredTokens,
-          type: 'DEDUCT_PURCHASE',
-          description: `Bayaran pesanan ${order.id}`,
+          partner: { connect: { id: userId } },
+          type: 'PURCHASE_DEDUCT',
+          amount: -requiredAmount,
+          grams: 0,
+          margin: 0,
+          referenceId: order.id,
+          createdBy: userId,
         },
       });
 
@@ -288,13 +292,13 @@ export class OrdersService {
 
     await this.notificationsService.createForUser(this.prisma, userId, {
       title: 'Pembayaran Berjaya',
-      message: `Pembayaran e-wallet berjaya untuk pesanan (ID: ${updated.id}).`,
+      message: `Pembayaran menggunakan baki deposit pelaburan berjaya untuk pesanan (ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: userId,
     });
     await this.notificationsService.createForRole(this.prisma, 'ADMIN', {
       title: 'Pembayaran E-Wallet',
-      message: `Pembayaran e-wallet berjaya untuk pesanan (ID: ${updated.id}).`,
+      message: `Pembayaran menggunakan baki deposit pelaburan berjaya untuk pesanan (ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: userId,
     });
@@ -383,4 +387,3 @@ export class OrdersService {
     return updated;
   }
 }
-

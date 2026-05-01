@@ -62,10 +62,7 @@ export default function CheckoutPage() {
     return items.reduce((sum: number, it: any) => sum + Number(it?.product?.price || 0) * Number(it?.quantity || 0), 0);
   }, [cart]);
 
-  const requiredTokens = useMemo(() => {
-    const rate = 2;
-    return Math.ceil(Number(totalAmount || 0) / rate);
-  }, [totalAmount]);
+  const requiredAmount = useMemo(() => Number(totalAmount || 0), [totalAmount]);
 
   const hasCartItems = Array.isArray(cart?.items) && cart.items.length > 0;
 
@@ -152,8 +149,8 @@ export default function CheckoutPage() {
     );
   }
 
-  const walletBalance = Number(wallet?.balance || 0);
-  const ewalletDisabled = walletBalance < requiredTokens;
+  const walletBalance = Number(wallet?.investmentBalance || 0);
+  const ewalletDisabled = walletBalance < requiredAmount;
 
   return (
     <div className="space-y-8">
@@ -230,13 +227,13 @@ export default function CheckoutPage() {
               >
                 <div className="flex items-center gap-3 text-white font-semibold">
                   <CreditCard size={18} className="text-gold-500" />
-                  E-Wallet (Token)
+                  E-Wallet (Deposit Pelaburan)
                 </div>
                 <div className="text-sm text-gray-400 mt-2">
-                  Baki: <span className="text-white">{walletBalance} Token</span> • Diperlukan:{' '}
-                  <span className="text-white">{requiredTokens} Token</span>
+                  Baki: <span className="text-white">{formatMoneyMYR(walletBalance)}</span> • Diperlukan:{' '}
+                  <span className="text-white">{formatMoneyMYR(requiredAmount)}</span>
                 </div>
-                {ewalletDisabled && <div className="text-sm text-red-300 mt-2">Baki token tidak mencukupi.</div>}
+                {ewalletDisabled && <div className="text-sm text-red-300 mt-2">Baki deposit pelaburan tidak mencukupi.</div>}
               </button>
 
               <button
@@ -336,7 +333,7 @@ export default function CheckoutPage() {
 
           {method === 'EWALLET' && (
             <div className="text-xs text-gray-500">
-              Kadar: 1 Token = RM 2.00 • Diperlukan: {requiredTokens} Token
+              Baki yang digunakan adalah daripada Jumlah Deposit Pelaburan (Diluluskan).
             </div>
           )}
         </div>
@@ -344,4 +341,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

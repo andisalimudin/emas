@@ -57,10 +57,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const requiredTokens = useMemo(() => {
-    const rate = 2;
-    return Math.ceil(Number(order?.totalAmount || 0) / rate);
-  }, [order?.totalAmount]);
+  const requiredAmount = useMemo(() => Number(order?.totalAmount || 0), [order?.totalAmount]);
 
   const isPaid = String(order?.status || '').toUpperCase() === 'PAID' || String(order?.payment?.status || '').toUpperCase() === 'APPROVED';
 
@@ -115,8 +112,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   if (loading) return <div className="text-center py-12 text-gray-500">Sedang memuatkan pesanan...</div>;
   if (!order) return <div className="text-center py-12 text-gray-500">Pesanan tidak dijumpai.</div>;
 
-  const walletBalance = Number(wallet?.balance || 0);
-  const ewalletDisabled = walletBalance < requiredTokens;
+  const walletBalance = Number(wallet?.investmentBalance || 0);
+  const ewalletDisabled = walletBalance < requiredAmount;
 
   return (
     <div className="space-y-8">
@@ -181,13 +178,13 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                   >
                     <div className="flex items-center gap-3 text-white font-semibold">
                       <CreditCard size={18} className="text-gold-500" />
-                      E-Wallet (Token)
+                      E-Wallet (Deposit Pelaburan)
                     </div>
                     <div className="text-sm text-gray-400 mt-2">
-                      Baki: <span className="text-white">{walletBalance} Token</span> • Diperlukan:{' '}
-                      <span className="text-white">{requiredTokens} Token</span>
+                      Baki: <span className="text-white">{formatMoneyMYR(walletBalance)}</span> • Diperlukan:{' '}
+                      <span className="text-white">{formatMoneyMYR(requiredAmount)}</span>
                     </div>
-                    {ewalletDisabled && <div className="text-sm text-red-300 mt-2">Baki token tidak mencukupi.</div>}
+                    {ewalletDisabled && <div className="text-sm text-red-300 mt-2">Baki deposit pelaburan tidak mencukupi.</div>}
                   </button>
 
                   <button
@@ -292,4 +289,3 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
-
