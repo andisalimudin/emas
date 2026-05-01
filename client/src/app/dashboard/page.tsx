@@ -159,7 +159,7 @@ export default function UserDashboard() {
           color="bg-gold-500 text-black hover:bg-gold-400"
         />
         <QuickAction 
-          title={isPartner ? "Dompet Saya" : "Pesanan Saya"}
+          title={isPartner ? "E-Wallet" : "Pesanan Saya"}
           description={isPartner ? "Urus deposit & pelaburan anda" : "Jejak penghantaran anda"}
           icon={Package} 
           href={isPartner ? "/dashboard/wallet" : "/dashboard/orders"}

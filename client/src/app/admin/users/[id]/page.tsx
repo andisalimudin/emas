@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchAPI } from '@/lib/api';
+import { API_URL, fetchAPI } from '@/lib/api';
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -20,11 +20,14 @@ export default function EditUserPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    username: '',
     phone: '',
+    avatarUrl: '',
     role: 'CUSTOMER',
     status: 'ACTIVE',
     isLocked: false,
   });
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -42,7 +45,9 @@ export default function EditUserPage() {
       setFormData({
         name: data.name || '',
         email: data.email || '',
+        username: data.username || '',
         phone: data.phone || '',
+        avatarUrl: data.avatarUrl || '',
         role: data.role || 'CUSTOMER',
         status: data.status || 'ACTIVE',
         isLocked: !!data.isLocked,
@@ -76,7 +81,9 @@ export default function EditUserPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
+          username: formData.username || null,
           phone: formData.phone || null,
+          avatarUrl: formData.avatarUrl || null,
           role: formData.role,
           status: formData.status,
           isLocked: formData.isLocked,
@@ -88,6 +95,29 @@ export default function EditUserPage() {
       setError(err.message || 'Gagal mengemaskini pengguna');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const uploadAvatar = async (file: File) => {
+    setAvatarUploading(true);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch(`${API_URL}/uploads`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Gagal upload gambar');
+      setFormData((prev) => ({ ...prev, avatarUrl: String(data?.url || '') }));
+    } catch (err: any) {
+      setError(err?.message || 'Gagal upload gambar');
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -132,12 +162,58 @@ export default function EditUserPage() {
           />
 
           <Input
+            label="Username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Contoh: amyreyes"
+          />
+
+          <Input
             label="Telefon"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
             placeholder="cth. 60123456789"
           />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Gambar Profil (Avatar)</label>
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <div className="h-16 w-16 rounded-2xl overflow-hidden border border-white/10 bg-black/30 flex items-center justify-center">
+                {formData.avatarUrl ? (
+                  <img src={formData.avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xs text-gray-500">Tiada</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <Input
+                  label="Avatar URL"
+                  name="avatarUrl"
+                  value={formData.avatarUrl}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                />
+                <label className="inline-flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                  <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10">
+                    <Camera size={16} className="text-gold-500" />
+                    {avatarUploading ? 'Sedang upload...' : 'Upload Gambar'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={avatarUploading}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = (e.target as any)?.files?.[0];
+                      if (file) uploadAvatar(file);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -187,7 +263,7 @@ export default function EditUserPage() {
           <Link href="/admin/users">
             <Button type="button" variant="ghost">Batal</Button>
           </Link>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving || avatarUploading}>
             {saving ? 'Sedang Menyimpan...' : 'Simpan Perubahan'}
           </Button>
         </div>

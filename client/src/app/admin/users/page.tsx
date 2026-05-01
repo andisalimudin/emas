@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Plus, Search, Edit, Trash } from 'lucide-react';
+import { MoreHorizontal, Plus, Search, Edit, Trash, Eye } from 'lucide-react';
 import { fetchAPI } from '@/lib/api';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -196,6 +196,12 @@ export default function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
                         <DropdownMenuLabel>Tindakan</DropdownMenuLabel>
+                        <DropdownMenuItem className="cursor-pointer hover:bg-white/10">
+                          <Link href={`/admin/users/${user.id}/view`} className="flex w-full items-center">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Lihat Profil
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="cursor-pointer hover:bg-white/10">
                           <Link href={`/admin/users/${user.id}`} className="flex w-full items-center">
                             <Edit className="mr-2 h-4 w-4" />

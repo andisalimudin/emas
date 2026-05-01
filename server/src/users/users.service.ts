@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, User } from '@prisma/client';
 
@@ -35,6 +35,7 @@ export class UsersService {
       select: {
         id: true,
         email: true,
+        username: true,
         name: true,
         phone: true,
         role: true,
@@ -53,6 +54,7 @@ export class UsersService {
       select: {
         id: true,
         email: true,
+        username: true,
         name: true,
         phone: true,
         role: true,
@@ -81,22 +83,30 @@ export class UsersService {
       }
     }
 
-    return this.prisma.user.update({
-      where: { id },
-      data: sanitizedData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        role: true,
-        status: true,
-        isLocked: true,
-        avatarUrl: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: sanitizedData,
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          name: true,
+          phone: true,
+          role: true,
+          status: true,
+          isLocked: true,
+          avatarUrl: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        throw new BadRequestException('Email atau username telah digunakan');
+      }
+      throw e;
+    }
   }
 
   async remove(id: string) {

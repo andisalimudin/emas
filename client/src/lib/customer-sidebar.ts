@@ -40,7 +40,7 @@ export const customerSidebarItems: SidebarItem[] = [
     icon: ShoppingCart,
   },
   {
-    title: 'Dompet Saya',
+    title: 'E-Wallet',
     path: '/dashboard/wallet',
     icon: Wallet,
   },

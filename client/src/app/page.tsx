@@ -42,11 +42,13 @@ const getPlaceholderImage = (text: string) => {
 const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('/uploads/');
 
 export default function LandingPage() {
-  const [heroTitle, setHeroTitle] = useState('Piawaian <br />Perdagangan Emas Eksklusif');
-  const [heroSubtitle, setHeroSubtitle] = useState('Platform yang selamat, berskala, dan premium untuk pelabur dan ejen serius. Sertai rangkaian elit profesional perdagangan emas.');
+  const [heroTitle] = useState(
+    'Keanggunan Emas, Nilai Yang Berkekalan 💛<br /><span class="text-gold-500">Eksklusif • Tulen • Pelaburan Bijak</span>',
+  );
+  const [heroSubtitle] = useState(
+    'Koleksi emas baru berprestij dan preloved terpilih untuk anda yang menghargai kualiti, gaya dan nilai.',
+  );
   const [products, setProducts] = useState<any[]>([]);
-  const [goldPrices, setGoldPrices] = useState<{ category: string; pricePerGram: number }[]>([]);
-  const [goldPricesUpdatedAt, setGoldPricesUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
@@ -54,38 +56,11 @@ export default function LandingPage() {
 
   const loadContent = async () => {
     try {
-      // Load Settings
-      const settings = await fetchAPI('/settings');
-      settings.forEach((item: any) => {
-        if (item.key === 'heroTitle') setHeroTitle(item.value);
-        if (item.key === 'heroSubtitle') setHeroSubtitle(item.value);
-      });
-
-      const gold = await fetchAPI('/category-gold-prices/public');
-      setGoldPrices(Array.isArray(gold?.items) ? gold.items : []);
-      setGoldPricesUpdatedAt(gold?.lastUpdatedAt || null);
-
       // Load Products
       const productsData = await fetchAPI('/products');
       setProducts(productsData.filter((p: any) => p.isActive).slice(0, 3)); // Show top 3 active products
     } catch (err) {
       console.error('Failed to load content:', err);
-    }
-  };
-
-  const formatUpdatedAt = (value: string | null) => {
-    if (!value) return null;
-    try {
-      const d = new Date(value);
-      return new Intl.DateTimeFormat('ms-MY', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(d);
-    } catch {
-      return null;
     }
   };
 
@@ -101,9 +76,9 @@ export default function LandingPage() {
           </Link>
           
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
-            <Link href="#products" className="hover:text-gold-400 transition-colors">Produk</Link>
-            <Link href="#about" className="hover:text-gold-400 transition-colors">Tentang Kami</Link>
-            <Link href="#agent" className="hover:text-gold-400 transition-colors">Jadi Ejen</Link>
+            <Link href="#products" className="hover:text-gold-400 transition-colors">Koleksi</Link>
+            <Link href="#about" className="hover:text-gold-400 transition-colors">Kenapa Kami</Link>
+            <Link href="#member" className="hover:text-gold-400 transition-colors">Ahli Privilege</Link>
             <Link href="#contact" className="hover:text-gold-400 transition-colors">Hubungi</Link>
           </div>
 
@@ -144,46 +119,22 @@ export default function LandingPage() {
             >
               {heroSubtitle}
             </motion.p>
-
-            <motion.div variants={fadeInUp} className="max-w-2xl mx-auto">
-              <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 backdrop-blur">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <p className="text-sm text-gray-300 font-semibold">Harga Emas Terkini (RM/gram)</p>
-                  <p className="text-xs text-gray-500">
-                    {goldPricesUpdatedAt ? `Dikemas kini: ${formatUpdatedAt(goldPricesUpdatedAt)}` : 'Belum dikemas kini'}
-                  </p>
-                </div>
-
-                {goldPrices.length === 0 ? (
-                  <p className="text-sm text-gray-400 mt-3">Harga kategori belum ditetapkan dalam admin.</p>
-                ) : (
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                    {goldPrices.slice(0, 6).map((it) => (
-                      <div key={it.category} className="flex items-center justify-between bg-black/40 border border-white/5 rounded-xl px-4 py-2">
-                        <span className="text-gray-300">{it.category}</span>
-                        <span className="font-mono text-gold-500">RM {Number(it.pricePerGram || 0).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </motion.div>
             
             <motion.div 
               variants={fadeInUp}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Link 
-                href="/register"
+                href="#products"
                 className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
               >
-                Mula Berdagang <ArrowRight className="w-4 h-4" />
+                Lihat Koleksi <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
-                href="#agent"
+                href="#member"
                 className="w-full sm:w-auto px-8 py-4 border border-white/20 hover:border-gold-500/50 hover:bg-gold-500/10 rounded-full transition-all text-white font-medium"
               >
-                Daftar sebagai Ejen
+                Jadi Ahli Privilege
               </Link>
             </motion.div>
           </motion.div>
@@ -195,10 +146,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { label: "Ejen Aktif", value: "500+" },
-              { label: "Jumlah Harian", value: "RM 2M+" },
-              { label: "Rizab Emas", value: "100kg" },
-              { label: "Kepercayaan Pelanggan", value: "100%" }
+              { label: "Emas Tulen", value: "916 / 999" },
+              { label: "Rekaan Premium", value: "Limited" },
+              { label: "Preloved Terpilih", value: "Hampir Baru" },
+              { label: "Khidmat Personal", value: "1-to-1" }
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-3xl md:text-4xl font-bold text-gold-500">{stat.value}</div>
@@ -213,10 +164,25 @@ export default function LandingPage() {
       <section id="products" className="py-24 bg-black relative">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold">Produk Emas Premium</h2>
+            <h2 className="text-3xl md:text-5xl font-bold">Koleksi Kami</h2>
             <p className="text-gray-400 max-w-xl mx-auto">
-              Koleksi kami menampilkan jongkong emas dan dinar berketulenan 999.9 yang diiktiraf.
+              Emas baru berprestij dan preloved premium terpilih untuk gaya moden & elegan.
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
+              <div className="text-lg font-bold text-white">💛 Emas Baru</div>
+              <p className="text-gray-400 mt-2">
+                Kilauan sempurna, rekaan terkini untuk gaya moden & elegan.
+              </p>
+            </div>
+            <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
+              <div className="text-lg font-bold text-white">♻️ Emas Preloved Premium</div>
+              <p className="text-gray-400 mt-2">
+                Disaring rapi — hanya item berkualiti tinggi dipilih. Rare, unik & lebih bernilai.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -286,18 +252,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                Dibina untuk <br />
-                <span className="text-gold-500">Keselamatan & Skala Perusahaan</span>
+                👑 Kenapa Kami Berbeza
               </h2>
               <p className="text-gray-400 text-lg">
-                Kami menyediakan platform teguh yang memastikan setiap transaksi selamat, telus, dan cekap.
+                Kami bukan sekadar menjual emas — kami menawarkan nilai, kepercayaan & eksklusiviti.
               </p>
               
               <div className="space-y-6">
                 {[
-                  { icon: Shield, title: "Transaksi Selamat", desc: "Penyulitan gred perusahaan dan log audit untuk setiap tindakan." },
-                  { icon: TrendingUp, title: "Analitik Masa Nyata", desc: "Data pasaran langsung dan penjejakan prestasi untuk ejen." },
-                  { icon: Clock, title: "Pemenuhan 3 Hari", desc: "Penyediaan emas dijamin dalam masa 3 hari untuk ejen yang disahkan." },
+                  { icon: CheckCircle, title: "Emas Tulen 916 / 999", desc: "Tulen, berkualiti, dan diyakini." },
+                  { icon: CheckCircle, title: "Rekaan Premium & Limited", desc: "Design eksklusif untuk yang menghargai gaya." },
+                  { icon: CheckCircle, title: "Preloved Dipilih (Condition Hampir Baru)", desc: "Hanya item terbaik yang melepasi saringan." },
+                  { icon: CheckCircle, title: "Harga Kompetitif & Telus", desc: "Nilai terbaik tanpa kompromi." },
+                  { icon: CheckCircle, title: "Khidmat Personal (1-to-1 consultation)", desc: "Bimbingan pilihan ikut keperluan anda." },
                 ].map((feature, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center flex-shrink-0 text-gold-500">
@@ -318,12 +285,12 @@ export default function LandingPage() {
                  <div className="w-24 h-24 bg-gold-500 rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(212,175,55,0.4)]">
                     <Lock className="w-10 h-10 text-black" />
                  </div>
-                 <h3 className="text-2xl font-bold">Akses Eksklusif</h3>
+                 <h3 className="text-2xl font-bold">💰 Harga Eksklusif Untuk Ahli</h3>
                  <p className="text-gray-400">
-                   Harga dan keupayaan perdagangan terhad kepada ahli yang disahkan sahaja.
+                   Nikmati harga lebih istimewa dengan menjadi Ahli Privilege kami.
                  </p>
                  <Link href="/register" className="text-gold-500 font-semibold hover:text-gold-400">
-                   Mohon Keahlian &rarr;
+                   Jadi Ahli Privilege &rarr;
                  </Link>
               </div>
             </div>
@@ -331,27 +298,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Agent CTA */}
-      <section id="agent" className="py-24 relative overflow-hidden">
+      <section id="member" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gold-600/10"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-3xl md:text-5xl font-bold text-white">Jadi Ejen Yang Disahkan</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white">💰 Harga Eksklusif Untuk Ahli</h2>
             <p className="text-xl text-gray-300">
-              Sertai rangkaian pedagang emas kami yang berjaya. Nikmati harga borong, komisen, dan akses alat eksklusif.
+              Nikmati harga lebih istimewa dengan menjadi Ahli Privilege kami.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-2xl mx-auto py-8">
-              {["Harga Borong", "Penjejakan Komisen", "Sokongan Utama"].map((item, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto py-8">
+              {[
+                "Diskaun khas setiap pembelian",
+                "Akses awal design baru",
+                "Harga lebih rendah berbanding non-member",
+                "Priority booking & lock harga",
+              ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-gold-400 font-medium">
                   <CheckCircle className="w-5 h-5" /> {item}
                 </div>
               ))}
             </div>
             <Link 
-              href="/register?role=agent"
+              href="/register"
               className="inline-block px-8 py-4 bg-gold-500 hover:bg-gold-400 text-black font-bold text-lg rounded-full transition-colors shadow-lg shadow-gold-500/20"
             >
-              Mohon sebagai Ejen
+              Jadi Ahli Privilege
             </Link>
           </div>
         </div>
@@ -375,8 +346,8 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold text-white mb-6">Platform</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><Link href="#products" className="hover:text-gold-500">Produk</Link></li>
-                <li><Link href="#agent" className="hover:text-gold-500">Ejen</Link></li>
+                <li><Link href="#products" className="hover:text-gold-500">Koleksi</Link></li>
+                <li><Link href="#member" className="hover:text-gold-500">Ahli Privilege</Link></li>
                 <li><Link href="/login" className="hover:text-gold-500">Log Masuk</Link></li>
               </ul>
             </div>

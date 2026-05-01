@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { API_URL, fetchAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,11 @@ function getStatusBadge(status: string) {
     return 'bg-red-500/10 text-red-500 border-red-500/20';
   }
   return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+}
+
+function formatMoneyMYR(value: any) {
+  const n = Number(value || 0);
+  return `RM ${n.toLocaleString('ms-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function WalletPage() {
@@ -241,16 +246,89 @@ export default function WalletPage() {
     }
   };
 
+  const highlightOffer = useMemo(() => {
+    if (!Array.isArray(offers) || offers.length === 0) return null;
+    return [...offers].sort((a, b) => Number(b?.gramsRemaining || 0) - Number(a?.gramsRemaining || 0))[0];
+  }, [offers]);
+
   if (loading) return <div className="text-center py-12 text-gray-500">Sedang memuatkan dompet...</div>;
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-white">Dompet Saya</h1>
+      <h1 className="text-2xl font-bold text-white">E-Wallet</h1>
 
       {user?.role === 'PARTNER' && (
         <div className="space-y-6">
           <div className="flex items-center justify-end">
             <Button variant="outline" onClick={refreshPartnerData}>Muat Semula</Button>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 via-black to-gold-950/30 p-6">
+            <img
+              src="/offer-gold.svg"
+              alt=""
+              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 opacity-25 blur-[0.2px]"
+            />
+            <div className="relative">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-gold-500/25 to-white/5 border border-white/10 flex items-center justify-center">
+                      <Gem size={18} className="text-gold-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400">Offer Pelaburan</p>
+                      <h3 className="text-lg font-bold text-white truncate">
+                        {offersLoading ? 'Memuatkan...' : highlightOffer?.title || highlightOffer?.baseCategory || 'Tiada offer aktif'}
+                      </h3>
+                    </div>
+                  </div>
+                  {highlightOffer ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
+                        <Scale size={14} className="text-gold-500" />
+                        Baki {Number(highlightOffer.gramsRemaining || 0).toFixed(4)} g
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
+                        <TrendingUp size={14} className="text-gold-500" />
+                        Kategori {highlightOffer.baseCategory}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('offers')?.scrollIntoView({ behavior: 'smooth' })}
+                  disabled={offersLoading || !highlightOffer}
+                >
+                  Lihat Offer
+                </Button>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div className="text-[11px] text-gray-400">Baki Gram</div>
+                  <div className="text-white font-semibold text-lg">
+                    {highlightOffer ? `${Number(highlightOffer.gramsRemaining || 0).toFixed(4)} g` : '-'}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div className="text-[11px] text-gray-400">Harga Semasa/g (B&I)</div>
+                  <div className="text-white font-semibold text-lg">
+                    {highlightOffer ? formatMoneyMYR(highlightOffer.basePricePerGram) : '-'}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div className="text-[11px] text-gray-400">Margin/g</div>
+                  <div className="text-white font-semibold text-lg">
+                    {highlightOffer ? formatMoneyMYR(highlightOffer.marginPerGram) : '-'}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-gray-500">
+                Harga dan margin bergantung kepada offer semasa. Tekan “Lihat Offer” untuk hantar gram kepada admin.
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -347,7 +425,7 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+          <div id="offers" className="bg-zinc-900 border border-white/10 rounded-xl p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
@@ -444,34 +522,6 @@ export default function WalletPage() {
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <div className="text-xs text-gray-400 mb-3">Senarai Pelabur</div>
-                        {Array.isArray(of.investors) && of.investors.length > 0 ? (
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-left text-xs text-gray-300">
-                              <thead className="text-gray-400">
-                                <tr>
-                                  <th className="py-2 pr-4 font-medium">Nama</th>
-                                  <th className="py-2 pr-4 font-medium">Email</th>
-                                  <th className="py-2 text-right font-medium">Gram (g)</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-white/10">
-                                {of.investors.map((inv: any, idx: number) => (
-                                  <tr key={`${of.id}-${idx}`}>
-                                    <td className="py-2 pr-4 text-white">{inv?.name || '-'}</td>
-                                    <td className="py-2 pr-4 font-mono">{inv?.email || '-'}</td>
-                                    <td className="py-2 text-right font-mono text-white">{Number(inv?.grams || 0).toFixed(4)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-gray-500">Belum ada pelabur lagi.</div>
-                        )}
                       </div>
                     </div>
                   </div>

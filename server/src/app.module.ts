@@ -15,6 +15,8 @@ import { CategoryGoldPricesModule } from './category-gold-prices/category-gold-p
 import { InvestmentOffersModule } from './investment-offers/investment-offers.module';
 import { InvestmentLedgerModule } from './investment-ledger/investment-ledger.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
+import { MeModule } from './me/me.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { UploadsModule } from './uploads/uploads.module';
     InvestmentOffersModule,
     InvestmentLedgerModule,
     UploadsModule,
+    AdminDashboardModule,
+    MeModule,
     SettingsModule,
     CartsModule,
     WalletModule,
