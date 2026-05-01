@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class WalletService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async getWallet(userId: string) {
     let wallet = await this.prisma.wallet.findUnique({
@@ -36,7 +40,7 @@ export class WalletService {
 
     const wallet = await this.getWallet(userId);
 
-    return this.prisma.$transaction(async (tx) => {
+    const updatedWallet = await this.prisma.$transaction(async (tx) => {
       const updatedWallet = await tx.wallet.update({
         where: { id: wallet.id },
         data: { balance: { increment: amount } }
@@ -53,6 +57,12 @@ export class WalletService {
 
       return updatedWallet;
     });
+    await this.notificationsService.createForUser(this.prisma as any, userId, {
+      title: 'Top Up E-Wallet',
+      message: `Top up berjaya: +${amount} tokens ditambah ke E-Wallet anda.`,
+      type: 'WALLET',
+    });
+    return updatedWallet;
   }
 
   async deductTokens(userId: string, tokens: number, description: string) {
@@ -62,7 +72,7 @@ export class WalletService {
       throw new BadRequestException('Insufficient token balance');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const updatedWallet = await this.prisma.$transaction(async (tx) => {
       const updatedWallet = await tx.wallet.update({
         where: { id: wallet.id },
         data: { balance: { decrement: tokens } }
@@ -79,5 +89,11 @@ export class WalletService {
 
       return updatedWallet;
     });
+    await this.notificationsService.createForUser(this.prisma as any, userId, {
+      title: 'Transaksi E-Wallet',
+      message: `Potongan berjaya: -${tokens} tokens. ${description ? `Butiran: ${description}` : ''}`.trim(),
+      type: 'WALLET',
+    });
+    return updatedWallet;
   }
 }

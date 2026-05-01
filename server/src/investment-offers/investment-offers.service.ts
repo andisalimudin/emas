@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 function normalizeKey(input: any) {
   return typeof input === 'string' ? input.trim().toLowerCase() : '';
@@ -36,7 +37,10 @@ function maskEmail(input: any) {
 
 @Injectable()
 export class InvestmentOffersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   private getModelOrThrow(modelName: string, client: any = this.prisma) {
     const model = client?.[modelName];
@@ -179,7 +183,7 @@ export class InvestmentOffersService {
       this.getModelOrThrow('investmentOffer');
       this.getModelOrThrow('investmentCommitment');
 
-      return this.prisma.$transaction(async (tx) => {
+      const res = await this.prisma.$transaction(async (tx) => {
         this.getModelOrThrow('investmentOffer', tx as any);
         this.getModelOrThrow('investmentCommitment', tx as any);
         this.getModelOrThrow('categoryGoldPrice', tx as any);
@@ -243,6 +247,17 @@ export class InvestmentOffersService {
 
         return { commitment, offer: updatedOffer };
       });
+      await this.notificationsService.createForUser(this.prisma as any, partnerId, {
+        title: 'Komitmen Pelaburan Dihantar',
+        message: `Komitmen pelaburan anda telah dihantar dan sedang menunggu kelulusan admin.`,
+        type: 'INVESTMENT',
+      });
+      await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
+        title: 'Komitmen Pelaburan Baru',
+        message: `Ada komitmen pelaburan baru untuk disemak.`,
+        type: 'INVESTMENT',
+      });
+      return res;
     } catch (err) {
       this.handlePrismaError(err);
     }
@@ -266,7 +281,11 @@ export class InvestmentOffersService {
   async adminApproveCommitment(commitmentId: string, adminId: string) {
     try {
       this.getModelOrThrow('investmentCommitment');
-      return await this.prisma.$transaction(async (tx) => {
+      let partnerId = '';
+      let grams = 0;
+      let amt = 0;
+
+      const res = await this.prisma.$transaction(async (tx) => {
         this.getModelOrThrow('investmentCommitment', tx as any);
         this.getModelOrThrow('investmentLedgerEntry', tx as any);
 
@@ -283,7 +302,7 @@ export class InvestmentOffersService {
           throw new BadRequestException('Rekod pelaburan telah diproses');
         }
 
-        const grams = roundGrams(Number(found.grams || 0));
+        grams = roundGrams(Number(found.grams || 0));
         if (!Number.isFinite(grams) || grams <= 0) {
           throw new BadRequestException('Jumlah gram tidak sah');
         }
@@ -299,7 +318,7 @@ export class InvestmentOffersService {
           throw new BadRequestException('Offer tidak mencukupi gram');
         }
 
-        const amt = roundMoney(Number(found.amount || 0));
+        amt = roundMoney(Number(found.amount || 0));
         if (!Number.isFinite(amt) || amt <= 0) {
           throw new BadRequestException('Amaun pelaburan tidak sah');
         }
@@ -349,9 +368,18 @@ export class InvestmentOffersService {
             createdBy: adminId,
           },
         });
+        partnerId = String(found.partnerId || '');
 
         return { commitment: updated, marginAmount };
       });
+      if (partnerId) {
+        await this.notificationsService.createForUser(this.prisma as any, partnerId, {
+          title: 'Komitmen Pelaburan Diluluskan',
+          message: `Komitmen pelaburan anda telah diluluskan. Gram: ${grams}, Amaun: RM${amt.toFixed(2)}.`,
+          type: 'INVESTMENT',
+        });
+      }
+      return res;
     } catch (err) {
       this.handlePrismaError(err);
     }
@@ -361,7 +389,10 @@ export class InvestmentOffersService {
     try {
       this.getModelOrThrow('investmentCommitment');
       this.getModelOrThrow('investmentOffer');
-      return await this.prisma.$transaction(async (tx) => {
+      let partnerId = '';
+      let note = null as string | null;
+
+      const res = await this.prisma.$transaction(async (tx) => {
         this.getModelOrThrow('investmentCommitment', tx as any);
         this.getModelOrThrow('investmentOffer', tx as any);
 
@@ -378,7 +409,7 @@ export class InvestmentOffersService {
           throw new BadRequestException('Rekod pelaburan telah diproses');
         }
 
-        const note = typeof adminNote === 'string' && adminNote.trim() ? adminNote.trim() : null;
+        note = typeof adminNote === 'string' && adminNote.trim() ? adminNote.trim() : null;
 
         const updated = await (tx as any).investmentCommitment.update({
           where: { id: commitmentId },
@@ -390,9 +421,18 @@ export class InvestmentOffersService {
           },
           include: { offer: true, partner: { select: { id: true, email: true, name: true, role: true } } },
         });
+        partnerId = String(found.partnerId || '');
 
         return { commitment: updated };
       });
+      if (partnerId) {
+        await this.notificationsService.createForUser(this.prisma as any, partnerId, {
+          title: 'Komitmen Pelaburan Ditolak',
+          message: `Komitmen pelaburan anda telah ditolak.${note ? ` Nota admin: ${note}` : ''}`.trim(),
+          type: 'INVESTMENT',
+        });
+      }
+      return res;
     } catch (err) {
       this.handlePrismaError(err);
     }
@@ -428,7 +468,7 @@ export class InvestmentOffersService {
 
     try {
       const offerModel = this.getModelOrThrow('investmentOffer');
-      return offerModel.create({
+      const created = await offerModel.create({
         data: {
           title,
           baseCategory,
@@ -439,6 +479,12 @@ export class InvestmentOffersService {
           createdBy: adminId,
         },
       });
+      await this.notificationsService.createForRole(this.prisma as any, 'PARTNER', {
+        title: 'Offer Pelaburan Baru',
+        message: `Offer pelaburan baru telah ditambah. Sila semak di E-Wallet.`,
+        type: 'INVESTMENT',
+      });
+      return created;
     } catch (err) {
       this.handlePrismaError(err);
     }

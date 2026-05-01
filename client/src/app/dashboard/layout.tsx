@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { customerSidebarItems } from '@/lib/customer-sidebar';
-import { LogOut, Menu, X, Bell } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -99,10 +100,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
           </button>
           
           <div className="flex items-center gap-4 ml-auto">
-            <button className="text-gray-400 hover:text-gold-500 transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationBell href="/dashboard/notifications" />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-white">{user.name}</p>
               <p className="text-xs text-gold-500">{user.role}</p>

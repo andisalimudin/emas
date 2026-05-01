@@ -17,6 +17,7 @@ import { InvestmentLedgerModule } from './investment-ledger/investment-ledger.mo
 import { UploadsModule } from './uploads/uploads.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { MeModule } from './me/me.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { MeModule } from './me/me.module';
     UploadsModule,
     AdminDashboardModule,
     MeModule,
+    NotificationsModule,
     SettingsModule,
     CartsModule,
     WalletModule,

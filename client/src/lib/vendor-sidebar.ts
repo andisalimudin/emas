@@ -1,5 +1,5 @@
 import { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, ShoppingBag, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, PlusCircle, Bell } from 'lucide-react';
 
 export interface VendorSidebarItem {
   title: string;
@@ -14,6 +14,11 @@ export const vendorSidebarItems: VendorSidebarItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: 'Notifikasi',
+    path: '/dashboard/vendor/notifications',
+    icon: Bell,
+  },
+  {
     title: 'Produk Dihantar',
     path: '/dashboard/vendor/products',
     icon: ShoppingBag,
@@ -24,4 +29,3 @@ export const vendorSidebarItems: VendorSidebarItem[] = [
     icon: PlusCircle,
   },
 ];
-

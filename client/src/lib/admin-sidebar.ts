@@ -10,6 +10,7 @@ import {
   BadgePercent,
   ListChecks,
   BookOpen,
+  Bell,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -24,6 +25,12 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Papan Pemuka',
     path: '/admin',
     icon: LayoutDashboard,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Notifikasi',
+    path: '/admin/notifications',
+    icon: Bell,
     roles: ['ADMIN'],
   },
   {

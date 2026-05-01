@@ -11,10 +11,14 @@ export default function SettingsPage() {
     heroSubtitle: '',
     contactEmail: '',
     maintenanceMode: 'false',
+    TELEGRAM_ENABLED: 'true',
+    TELEGRAM_BOT_TOKEN: '',
+    TELEGRAM_CHAT_ID: '',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [telegramTestText, setTelegramTestText] = useState('Ujian notifikasi Telegram');
 
   useEffect(() => {
     loadSettings();
@@ -22,7 +26,12 @@ export default function SettingsPage() {
 
   const loadSettings = async () => {
     try {
-      const data = await fetchAPI('/settings');
+      const token = localStorage.getItem('token');
+      const data = await fetchAPI('/settings', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const formattedSettings: any = {};
       data.forEach((item: any) => {
         formattedSettings[item.key] = item.value;
@@ -45,20 +54,48 @@ export default function SettingsPage() {
     setSuccess('');
 
     try {
-      // Update each setting individually
-      await Promise.all(Object.entries(settings).map(([key, value]) => 
-        fetchAPI(`/settings/${key}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ value, description: 'Landing Page Setting' }),
-        })
-      ));
+      const token = localStorage.getItem('token');
+      const telegramKeys = new Set(['TELEGRAM_ENABLED', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']);
+
+      await Promise.all(
+        Object.entries(settings).map(([key, value]) =>
+          fetchAPI(`/settings/${key}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              value,
+              description: telegramKeys.has(key) ? 'Telegram' : 'Landing Page Setting',
+            }),
+          })
+        )
+      );
 
       setSuccess('Settings updated successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to update settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTelegramTest = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const token = localStorage.getItem('token');
+      await fetchAPI('/telegram/test', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: telegramTestText }),
+      });
+      setSuccess('Ujian Telegram berjaya dihantar!');
+    } catch (err: any) {
+      setError(err.message || 'Gagal hantar ujian Telegram');
     } finally {
       setLoading(false);
     }
@@ -118,6 +155,48 @@ export default function SettingsPage() {
               className="w-4 h-4 rounded border-gray-300 text-gold-500 focus:ring-gold-500"
             />
             <span className="text-sm text-gray-300">Dayakan Mod Penyelenggaraan</span>
+          </div>
+
+          <h2 className="text-lg font-medium text-gold-500 pt-6">Notifikasi Telegram</h2>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              name="TELEGRAM_ENABLED"
+              checked={settings.TELEGRAM_ENABLED === 'true'}
+              onChange={(e) => setSettings((prev: any) => ({ ...prev, TELEGRAM_ENABLED: e.target.checked ? 'true' : 'false' }))}
+              className="w-4 h-4 rounded border-gray-300 text-gold-500 focus:ring-gold-500"
+            />
+            <span className="text-sm text-gray-300">Dayakan Notifikasi Telegram</span>
+          </div>
+
+          <Input
+            label="Telegram Bot Token"
+            name="TELEGRAM_BOT_TOKEN"
+            type="password"
+            value={settings.TELEGRAM_BOT_TOKEN}
+            onChange={handleChange}
+            placeholder="cth. 123456:ABCDEF..."
+          />
+
+          <Input
+            label="Telegram Chat ID (Group)"
+            name="TELEGRAM_CHAT_ID"
+            value={settings.TELEGRAM_CHAT_ID}
+            onChange={handleChange}
+            placeholder="cth. -1001234567890"
+          />
+
+          <div className="grid gap-3 pt-2">
+            <Input
+              label="Ujian mesej Telegram"
+              value={telegramTestText}
+              onChange={(e) => setTelegramTestText(e.target.value)}
+              placeholder="cth. Ujian notifikasi Telegram"
+            />
+            <Button type="button" variant="secondary" onClick={handleTelegramTest} disabled={loading}>
+              Hantar Ujian Telegram
+            </Button>
           </div>
         </div>
 

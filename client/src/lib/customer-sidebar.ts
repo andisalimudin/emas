@@ -7,7 +7,8 @@ import {
   User, 
   LogOut,
   Clock,
-  Wallet
+  Wallet,
+  Bell
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -22,6 +23,11 @@ export const customerSidebarItems: SidebarItem[] = [
     title: 'Papan Pemuka',
     path: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Notifikasi',
+    path: '/dashboard/notifications',
+    icon: Bell,
   },
   {
     title: 'Dashboard Vendor',

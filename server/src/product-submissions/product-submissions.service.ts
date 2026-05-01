@@ -1,9 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ProductSubmissionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async createForVendor(vendorId: string, data: any) {
     const payload = {
@@ -21,9 +25,20 @@ export class ProductSubmissionsService {
       status: 'PENDING',
     };
 
-    return (this.prisma as any).productSubmission.create({
+    const created = await (this.prisma as any).productSubmission.create({
       data: payload,
     });
+    await this.notificationsService.createForUser(this.prisma as any, vendorId, {
+      title: 'Produk Dihantar',
+      message: `Produk anda telah dihantar untuk semakan admin.`,
+      type: 'PRODUCT',
+    });
+    await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
+      title: 'Semakan Produk Vendor',
+      message: `Ada produk vendor baru untuk disemak.`,
+      type: 'PRODUCT',
+    });
+    return created;
   }
 
   async listMine(vendorId: string) {
@@ -74,7 +89,7 @@ export class ProductSubmissionsService {
       },
     });
 
-    return (this.prisma as any).productSubmission.update({
+    const updated = await (this.prisma as any).productSubmission.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -86,6 +101,12 @@ export class ProductSubmissionsService {
         vendor: { select: { id: true, email: true, name: true, role: true } },
       },
     });
+    await this.notificationsService.createForUser(this.prisma as any, submission.vendorId, {
+      title: 'Produk Diluluskan',
+      message: `Produk anda telah diluluskan dan diterbitkan.`,
+      type: 'PRODUCT',
+    });
+    return updated;
   }
 
   async reject(id: string, adminId: string, adminNote?: string) {
@@ -101,7 +122,7 @@ export class ProductSubmissionsService {
       throw new BadRequestException('Submission telah diproses');
     }
 
-    return (this.prisma as any).productSubmission.update({
+    const updated = await (this.prisma as any).productSubmission.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -113,5 +134,11 @@ export class ProductSubmissionsService {
         vendor: { select: { id: true, email: true, name: true, role: true } },
       },
     });
+    await this.notificationsService.createForUser(this.prisma as any, submission.vendorId, {
+      title: 'Produk Ditolak',
+      message: `Produk anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
+      type: 'PRODUCT',
+    });
+    return updated;
   }
 }

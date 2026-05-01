@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { sidebarItems } from '@/lib/admin-sidebar';
 import { LogOut, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -105,6 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
           
           <div className="flex items-center gap-4 ml-auto">
+            <NotificationBell href="/admin/notifications" />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-white">{user.name}</p>
               <p className="text-xs text-gold-500">{user.role.replace('_', ' ')}</p>

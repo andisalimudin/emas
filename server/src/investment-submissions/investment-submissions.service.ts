@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class InvestmentSubmissionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   private getModelOrThrow() {
     const model = (this.prisma as any).investmentSubmission;
@@ -54,9 +58,20 @@ export class InvestmentSubmissionsService {
 
     try {
       const model = this.getModelOrThrow();
-      return model.create({
+      const created = await model.create({
         data: payload,
       });
+      await this.notificationsService.createForUser(this.prisma as any, partnerId, {
+        title: 'Permohonan Pelaburan Dihantar',
+        message: `Permohonan pelaburan anda telah dihantar dan sedang menunggu semakan admin.`,
+        type: 'INVESTMENT',
+      });
+      await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
+        title: 'Permohonan Pelaburan Baru',
+        message: `Ada permohonan pelaburan baru daripada partner. Sila semak di dashboard admin.`,
+        type: 'INVESTMENT',
+      });
+      return created;
     } catch (err) {
       this.handlePrismaError(err);
     }
@@ -93,7 +108,10 @@ export class InvestmentSubmissionsService {
 
   async approve(id: string, adminId: string) {
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      let partnerId = '';
+      let transferAmount = 0;
+
+      const updated = await this.prisma.$transaction(async (tx) => {
         if (!(tx as any).investmentSubmission) {
           throw new BadRequestException('Prisma client belum dikemaskini. Sila jalankan prisma generate di server.');
         }
@@ -112,6 +130,9 @@ export class InvestmentSubmissionsService {
         if (submission.status !== 'PENDING') {
           throw new BadRequestException('Submission telah diproses');
         }
+
+        partnerId = String(submission.partnerId || '');
+        transferAmount = Number(submission.transferAmount || 0);
 
         const updated = await (tx as any).investmentSubmission.update({
           where: { id },
@@ -153,6 +174,14 @@ export class InvestmentSubmissionsService {
 
         return updated;
       });
+      if (partnerId) {
+        await this.notificationsService.createForUser(this.prisma as any, partnerId, {
+          title: 'Pelaburan Diluluskan',
+          message: `Permohonan pelaburan anda telah diluluskan. Amaun: RM${transferAmount.toFixed(2)}.`,
+          type: 'INVESTMENT',
+        });
+      }
+      return updated;
     } catch (err) {
       this.handlePrismaError(err);
     }
@@ -173,7 +202,7 @@ export class InvestmentSubmissionsService {
         throw new BadRequestException('Submission telah diproses');
       }
 
-      return (this.prisma as any).investmentSubmission.update({
+      const updated = await (this.prisma as any).investmentSubmission.update({
         where: { id },
         data: {
           status: 'REJECTED',
@@ -185,6 +214,12 @@ export class InvestmentSubmissionsService {
           partner: { select: { id: true, email: true, name: true, role: true } },
         },
       });
+      await this.notificationsService.createForUser(this.prisma as any, submission.partnerId, {
+        title: 'Pelaburan Ditolak',
+        message: `Permohonan pelaburan anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
+        type: 'INVESTMENT',
+      });
+      return updated;
     } catch (err) {
       this.handlePrismaError(err);
     }
