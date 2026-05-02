@@ -63,6 +63,15 @@ export class ProductsService {
     const imageUrls = this.normalizeImageUrls(body?.imageUrls);
     const data: any = { ...(body || {}) };
     delete data.imageUrls;
+    delete data.categoryRel;
+    delete data.images;
+
+    const hasCategoryId = Object.prototype.hasOwnProperty.call(body || {}, 'categoryId');
+    const rawCategoryId = hasCategoryId
+      ? typeof body?.categoryId === 'string'
+        ? body.categoryId.trim()
+        : ''
+      : null;
 
     if (Array.isArray(body?.imageUrls) && body.imageUrls.length > 5) {
       throw new BadRequestException('Maksimum 5 gambar untuk setiap produk');
@@ -73,6 +82,18 @@ export class ProductsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      if (hasCategoryId) {
+        if (!rawCategoryId) {
+          data.categoryId = null;
+        } else {
+          const found = await tx.category.findUnique({ where: { id: rawCategoryId } });
+          if (!found) {
+            throw new BadRequestException('Kategori tidak ditemui');
+          }
+          data.categoryId = rawCategoryId;
+        }
+      }
+
       const created = await tx.product.create({ data });
 
       if (imageUrls.length > 0) {
@@ -90,7 +111,7 @@ export class ProductsService {
 
       return tx.product.findUnique({
         where: { id: created.id },
-        include: { images: { orderBy: { sortOrder: 'asc' } } },
+        include: { images: { orderBy: { sortOrder: 'asc' } }, categoryRel: true },
       });
     });
   }
@@ -98,7 +119,7 @@ export class ProductsService {
   async findAll() {
     const items = await this.prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
+      include: { images: { orderBy: { sortOrder: 'asc' } }, categoryRel: true },
     });
     return this.applyCategoryPricing(items as any);
   }
@@ -106,7 +127,7 @@ export class ProductsService {
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
+      include: { images: { orderBy: { sortOrder: 'asc' } }, categoryRel: true },
     });
     const [priced] = await this.applyCategoryPricing(product ? [product] : []);
     return priced || null;
@@ -118,6 +139,15 @@ export class ProductsService {
 
     const data: any = { ...(body || {}) };
     delete data.imageUrls;
+    delete data.categoryRel;
+    delete data.images;
+
+    const hasCategoryId = Object.prototype.hasOwnProperty.call(body || {}, 'categoryId');
+    const rawCategoryId = hasCategoryId
+      ? typeof body?.categoryId === 'string'
+        ? body.categoryId.trim()
+        : ''
+      : null;
 
     if (Array.isArray(body?.imageUrls) && body.imageUrls.length > 5) {
       throw new BadRequestException('Maksimum 5 gambar untuk setiap produk');
@@ -128,6 +158,18 @@ export class ProductsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      if (hasCategoryId) {
+        if (!rawCategoryId) {
+          data.categoryId = null;
+        } else {
+          const found = await tx.category.findUnique({ where: { id: rawCategoryId } });
+          if (!found) {
+            throw new BadRequestException('Kategori tidak ditemui');
+          }
+          data.categoryId = rawCategoryId;
+        }
+      }
+
       const updated = await tx.product.update({
         where: { id },
         data,
@@ -151,7 +193,7 @@ export class ProductsService {
 
       return tx.product.findUnique({
         where: { id: updated.id },
-        include: { images: { orderBy: { sortOrder: 'asc' } } },
+        include: { images: { orderBy: { sortOrder: 'asc' } }, categoryRel: true },
       });
     });
   }

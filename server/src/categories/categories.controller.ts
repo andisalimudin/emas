@@ -1,28 +1,23 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
+import { CategoriesService } from './categories.service';
 
-@Controller('products')
-export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+@Controller('categories')
+export class CategoriesController {
+  constructor(private readonly categoriesService: CategoriesService) {}
+
+  @Get()
+  async list() {
+    return this.categoriesService.list();
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  create(@Req() req: any, @Body() body: any) {
+  async create(@Req() req: any, @Body() body: any) {
     if (req?.user?.role !== 'ADMIN') {
       throw new ForbiddenException('Akses tidak dibenarkan');
     }
-    return this.productsService.create(body);
-  }
-
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+    return this.categoriesService.create(body);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -31,15 +26,16 @@ export class ProductsController {
     if (req?.user?.role !== 'ADMIN') {
       throw new ForbiddenException('Akses tidak dibenarkan');
     }
-    return this.productsService.update(id, body);
+    return this.categoriesService.update(id, body);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  remove(@Req() req: any, @Param('id') id: string) {
+  async remove(@Req() req: any, @Param('id') id: string) {
     if (req?.user?.role !== 'ADMIN') {
       throw new ForbiddenException('Akses tidak dibenarkan');
     }
-    return this.productsService.remove(id);
+    return this.categoriesService.remove(id);
   }
 }
+

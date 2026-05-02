@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { API_URL, fetchAPI } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -14,6 +24,13 @@ export default function NewProductPage() {
   const [error, setError] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageUploading, setImageUploading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+  const [categoryDescription, setCategoryDescription] = useState('');
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +42,24 @@ export default function NewProductPage() {
     stock: 0,
     isActive: true,
     hidePrice: false,
+    categoryId: '',
   });
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+      const data = await fetchAPI('/categories');
+      setCategories(Array.isArray(data) ? data : []);
+    } catch {
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -63,6 +97,40 @@ export default function NewProductPage() {
       setError(err.message || 'Failed to create product');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createCategory = async () => {
+    const name = categoryName.trim();
+    if (!name) {
+      setCategoryError('Nama kategori diperlukan');
+      return;
+    }
+
+    setCategorySaving(true);
+    setCategoryError(null);
+    try {
+      const created = await fetchAPI('/categories', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          name,
+          description: categoryDescription.trim() || undefined,
+        }),
+      });
+      await loadCategories();
+      if (created?.id) {
+        setFormData((prev) => ({ ...prev, categoryId: created.id }));
+      }
+      setCategoryName('');
+      setCategoryDescription('');
+      setCategoryDialogOpen(false);
+    } catch (e: any) {
+      setCategoryError(e?.message || 'Gagal tambah kategori');
+    } finally {
+      setCategorySaving(false);
     }
   };
 
@@ -132,6 +200,29 @@ export default function NewProductPage() {
             required
             placeholder="cth. Gold Bar 10g"
           />
+
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Kategori Produk</label>
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleChange}
+                disabled={categoriesLoading}
+                className="w-full bg-black border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gold-500"
+              >
+                <option value="">{categoriesLoading ? 'Memuatkan...' : 'Tiada kategori'}</option>
+                {(categories || []).map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button type="button" variant="outline" onClick={() => setCategoryDialogOpen(true)}>
+              Tambah Kategori
+            </Button>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Input
@@ -269,6 +360,61 @@ export default function NewProductPage() {
           </Button>
         </div>
       </form>
+
+      <AlertDialog
+        open={categoryDialogOpen}
+        onOpenChange={(open) => {
+          setCategoryDialogOpen(open);
+          if (!open) setCategoryError(null);
+        }}
+      >
+        <AlertDialogContent className="bg-zinc-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tambah Kategori</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Kategori ini akan boleh dipilih untuk produk.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {categoryError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-200 text-sm">
+              {categoryError}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <Input
+              label="Nama Kategori"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="cth. Barang Kemas"
+              required
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Penerangan (optional)</label>
+              <textarea
+                value={categoryDescription}
+                onChange={(e) => setCategoryDescription(e.target.value)}
+                className="w-full bg-black border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 min-h-[90px]"
+                placeholder="Penerangan kategori..."
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white">
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={createCategory}
+              disabled={categorySaving}
+              className="bg-gold-500 hover:bg-gold-600 text-black border-none"
+            >
+              {categorySaving ? 'Menyimpan...' : 'Simpan'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

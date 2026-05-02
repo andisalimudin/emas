@@ -49,6 +49,8 @@ export default function LandingPage() {
     'Koleksi emas baru berprestij dan preloved terpilih untuk anda yang menghargai kualiti, gaya dan nilai.',
   );
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('');
 
   useEffect(() => {
     loadContent();
@@ -56,13 +58,24 @@ export default function LandingPage() {
 
   const loadContent = async () => {
     try {
-      // Load Products
-      const productsData = await fetchAPI('/products');
-      setProducts(productsData.filter((p: any) => p.isActive).slice(0, 3)); // Show top 3 active products
+      const [productsData, categoriesData] = await Promise.all([fetchAPI('/products'), fetchAPI('/categories')]);
+      setProducts((Array.isArray(productsData) ? productsData : []).filter((p: any) => p.isActive).slice(0, 6));
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (err) {
       console.error('Failed to load content:', err);
     }
   };
+
+  const filteredProducts = products.filter((p: any) => {
+    if (!activeCategoryId) return true;
+    return String(p?.categoryId || '') === activeCategoryId;
+  });
+
+  const categoryChips = [{ id: '', label: 'Semua' }].concat(
+    (categories || [])
+      .map((c: any) => ({ id: String(c?.id || ''), label: String(c?.name || '') }))
+      .filter((c) => c.id && c.label),
+  );
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden">
@@ -170,6 +183,23 @@ export default function LandingPage() {
             </p>
           </div>
 
+          <div className="flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap pb-1 mb-10">
+            {categoryChips.map((c) => (
+              <button
+                key={c.id || 'all'}
+                type="button"
+                onClick={() => setActiveCategoryId(c.id)}
+                className={`px-4 py-2 rounded-full text-sm border transition-colors ${
+                  activeCategoryId === c.id
+                    ? 'bg-gold-500 text-black border-gold-500'
+                    : 'bg-white/5 text-gray-200 border-white/10 hover:border-gold-500/40 hover:bg-gold-500/10'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6">
               <div className="text-lg font-bold text-white">💛 Emas Baru</div>
@@ -186,8 +216,8 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {products.length > 0 ? (
-              products.map((product, i) => (
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product, i) => (
                 <motion.div 
                   key={product.id || i}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -214,6 +244,9 @@ export default function LandingPage() {
                     <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs font-medium text-gold-400">
                       {product.purity} Ketulenan
                     </div>
+                    <div className="absolute top-4 left-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs font-medium text-gray-100">
+                      {product?.categoryRel?.name || product?.category || 'Lain-lain'}
+                    </div>
                   </div>
                   
                   <div className="p-8 space-y-4 relative z-10 bg-gradient-to-t from-black via-zinc-900/50 to-transparent -mt-20 pt-24">
@@ -231,9 +264,9 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    <button className="w-full py-3 mt-4 bg-white/5 hover:bg-gold-500 hover:text-black border border-white/10 hover:border-gold-500 rounded-lg transition-all duration-300 font-medium">
+                    <Link href={`/products/${product.id}`} className="block w-full text-center py-3 mt-4 bg-white/5 hover:bg-gold-500 hover:text-black border border-white/10 hover:border-gold-500 rounded-lg transition-all duration-300 font-medium">
                       Lihat Butiran
-                    </button>
+                    </Link>
                   </div>
                 </motion.div>
               ))
@@ -242,6 +275,15 @@ export default function LandingPage() {
                 Tiada produk tersedia buat masa ini.
               </div>
             )}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+            >
+              Lihat Semua Produk <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
           </div>
         </div>
       </section>

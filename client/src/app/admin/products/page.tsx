@@ -37,6 +37,11 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [productToDelete, setProductToDelete] = useState<any>(null);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+  const [categoryDescription, setCategoryDescription] = useState('');
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -73,16 +78,51 @@ export default function ProductsPage() {
     }
   };
 
+  const createCategory = async () => {
+    const name = categoryName.trim();
+    if (!name) {
+      setCategoryError('Nama kategori diperlukan');
+      return;
+    }
+
+    setCategorySaving(true);
+    setCategoryError(null);
+    try {
+      await fetchAPI('/categories', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          name,
+          description: categoryDescription.trim() || undefined,
+        }),
+      });
+      setCategoryName('');
+      setCategoryDescription('');
+      setCategoryDialogOpen(false);
+    } catch (e: any) {
+      setCategoryError(e?.message || 'Gagal tambah kategori');
+    } finally {
+      setCategorySaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Produk</h1>
-        <Link href="/admin/products/new">
-          <Button className="flex items-center gap-2">
-            <Plus size={16} />
-            Tambah Produk
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => setCategoryDialogOpen(true)}>
+            Tambah Kategori
           </Button>
-        </Link>
+          <Link href="/admin/products/new">
+            <Button className="flex items-center gap-2">
+              <Plus size={16} />
+              Tambah Produk
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-xl border border-white/10">
@@ -183,6 +223,63 @@ export default function ProductsPage() {
               className="bg-red-600 hover:bg-red-700 text-white border-none"
             >
               Padam
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={categoryDialogOpen}
+        onOpenChange={(open) => {
+          setCategoryDialogOpen(open);
+          if (!open) {
+            setCategoryError(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="bg-zinc-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tambah Kategori</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Kategori ini akan boleh dipilih semasa tambah atau edit produk.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {categoryError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-200 text-sm">
+              {categoryError}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <Input
+              label="Nama Kategori"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="cth. Barang Kemas"
+              required
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Penerangan (optional)</label>
+              <textarea
+                value={categoryDescription}
+                onChange={(e) => setCategoryDescription(e.target.value)}
+                className="w-full bg-black border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-gold-500 min-h-[90px]"
+                placeholder="Penerangan kategori..."
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/5 hover:text-white">
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={createCategory}
+              disabled={categorySaving}
+              className="bg-gold-500 hover:bg-gold-600 text-black border-none"
+            >
+              {categorySaving ? 'Menyimpan...' : 'Simpan'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

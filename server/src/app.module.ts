@@ -20,6 +20,7 @@ import { MeModule } from './me/me.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PaymentsModule } from './payments/payments.module';
     NotificationsModule,
     OrdersModule,
     PaymentsModule,
+    CategoriesModule,
     SettingsModule,
     CartsModule,
     WalletModule,
