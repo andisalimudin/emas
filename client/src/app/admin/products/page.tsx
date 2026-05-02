@@ -116,6 +116,9 @@ export default function ProductsPage() {
           <Button variant="outline" onClick={() => setCategoryDialogOpen(true)}>
             Tambah Kategori
           </Button>
+          <Link href="/admin/categories">
+            <Button variant="outline">Urus Kategori</Button>
+          </Link>
           <Link href="/admin/products/new">
             <Button className="flex items-center gap-2">
               <Plus size={16} />

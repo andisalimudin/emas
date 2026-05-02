@@ -13,6 +13,7 @@ import {
   ListChecks,
   BookOpen,
   Bell,
+  Tags,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -93,6 +94,12 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Produk',
     path: '/admin/products',
     icon: ShoppingBag,
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Kategori Produk',
+    path: '/admin/categories',
+    icon: Tags,
     roles: ['ADMIN'],
   },
   {

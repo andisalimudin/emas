@@ -31,13 +31,17 @@ const isUploadsSrc = (src: unknown) => typeof src === 'string' && src.includes('
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [lockingPrice, setLockingPrice] = useState<string | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('');
 
   useEffect(() => {
     loadProducts();
+    loadCategories();
   }, []);
 
   const loadProducts = async () => {
@@ -48,6 +52,18 @@ export default function ProductsPage() {
       console.error('Failed to load products:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+      const data = await fetchAPI('/categories');
+      setCategories(Array.isArray(data) ? data : []);
+    } catch {
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -98,7 +114,35 @@ export default function ProductsPage() {
 
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter((product) => {
+    if (!activeCategoryId) return true;
+    if (activeCategoryId === '__uncategorized__') {
+      const hasCategoryId = typeof product?.categoryId === 'string' && product.categoryId.trim().length > 0;
+      const hasCategoryText = typeof product?.category === 'string' && product.category.trim().length > 0;
+      return !hasCategoryId && !hasCategoryText;
+    }
+    return String(product?.categoryId || '') === activeCategoryId;
+  });
+
+  const hasUncategorized = products.some((p) => {
+    const hasCategoryId = typeof p?.categoryId === 'string' && p.categoryId.trim().length > 0;
+    const hasCategoryText = typeof p?.category === 'string' && p.category.trim().length > 0;
+    return !hasCategoryId && !hasCategoryText;
+  });
+
+  const categoryChips = [{ id: '', label: 'Semua' }].concat(
+    (categories || [])
+      .map((c: any) => ({ id: String(c?.id || ''), label: String(c?.name || '') }))
+      .filter((c) => c.id && c.label),
+  ).concat(hasUncategorized ? [{ id: '__uncategorized__', label: 'Lain-lain' }] : []);
+
+  const getCategoryLabel = (product: any) => {
+    const byRel = typeof product?.categoryRel?.name === 'string' ? product.categoryRel.name.trim() : '';
+    if (byRel) return byRel;
+    const byText = typeof product?.category === 'string' ? product.category.trim() : '';
+    if (byText) return byText;
+    return 'Lain-lain';
+  };
 
   return (
     <div className="space-y-6">
@@ -121,6 +165,24 @@ export default function ProductsPage() {
             Tapis
           </Button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
+        {categoryChips.map((c) => (
+          <button
+            key={c.id || 'all'}
+            type="button"
+            onClick={() => setActiveCategoryId(c.id)}
+            disabled={categoriesLoading && c.id !== ''}
+            className={`px-4 py-2 rounded-full text-sm border transition-colors ${
+              activeCategoryId === c.id
+                ? 'bg-gold-500 text-black border-gold-500'
+                : 'bg-white/5 text-gray-200 border-white/10 hover:border-gold-500/40 hover:bg-gold-500/10'
+            } ${categoriesLoading && c.id !== '' ? 'opacity-60 cursor-not-allowed' : ''}`}
+          >
+            {c.label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -147,6 +209,9 @@ export default function ProductsPage() {
                   })()}
                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-medium text-gold-400 border border-white/10">
                     {product.purity}
+                  </div>
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-medium text-gray-100 border border-white/10">
+                    {getCategoryLabel(product)}
                   </div>
                 </div>
               </Link>
