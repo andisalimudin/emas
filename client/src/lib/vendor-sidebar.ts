@@ -29,3 +29,25 @@ export const vendorSidebarItems: VendorSidebarItem[] = [
     icon: PlusCircle,
   },
 ];
+
+export interface VendorSidebarSection {
+  label: string;
+  items: VendorSidebarItem[];
+}
+
+export const vendorSidebarSections: VendorSidebarSection[] = [
+  {
+    label: 'Umum',
+    items: [
+      { title: 'Papan Pemuka Vendor', path: '/dashboard/vendor', icon: LayoutDashboard },
+      { title: 'Notifikasi', path: '/dashboard/vendor/notifications', icon: Bell },
+    ],
+  },
+  {
+    label: 'Produk',
+    items: [
+      { title: 'Produk Dihantar', path: '/dashboard/vendor/products', icon: ShoppingBag },
+      { title: 'Hantar Produk', path: '/dashboard/vendor/products/new', icon: PlusCircle },
+    ],
+  },
+];

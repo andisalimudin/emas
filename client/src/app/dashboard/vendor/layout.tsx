@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { vendorSidebarItems } from '@/lib/vendor-sidebar';
-import { LogOut, Menu, X } from 'lucide-react';
+import { vendorSidebarSections } from '@/lib/vendor-sidebar';
+import { ChevronDown, LogOut, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -38,6 +39,11 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
     router.push('/login');
   };
 
+  useEffect(() => {
+    const found = vendorSidebarSections.find((section) => section.items.some((item) => pathname === item.path));
+    if (found) setOpenSection(found.label);
+  }, [pathname]);
+
   if (!user) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
 
   return (
@@ -60,25 +66,46 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
-          {vendorSidebarItems.map((item) => {
-            const isActive = pathname === item.path;
-            const Icon = item.icon;
-
+        <nav className="p-4 space-y-3">
+          {vendorSidebarSections.map((section) => {
+            const isOpen = openSection === section.label;
             return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={clsx(
-                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                  isActive
-                    ? 'bg-gold-500/10 text-gold-500 border border-gold-500/20'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                )}
-              >
-                <Icon size={20} />
-                <span className="font-medium">{item.title}</span>
-              </Link>
+              <div key={section.label} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenSection((prev) => (prev === section.label ? null : section.label))}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+                  aria-expanded={isOpen}
+                >
+                  <div className="text-xs font-semibold tracking-wider text-gray-300 uppercase">{section.label}</div>
+                  <ChevronDown
+                    size={16}
+                    className={clsx('text-gray-400 transition-transform', isOpen ? 'rotate-180' : 'rotate-0')}
+                  />
+                </button>
+                <div className={clsx('px-2 pb-2 space-y-1', isOpen ? 'block' : 'hidden')}>
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.path;
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        className={clsx(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                          isActive
+                            ? 'bg-gold-500/10 text-gold-500 border border-gold-500/20'
+                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                        )}
+                      >
+                        <Icon size={18} />
+                        <span className="font-medium">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </nav>

@@ -82,9 +82,11 @@ export class AuthService {
     });
     await this.notificationsService.createForRole(this.prisma as any, 'ADMIN', {
       title: 'Pendaftaran Baru',
-      message: `Pendaftaran pengguna baru: ${user.name}`,
+      message: `Pendaftaran pengguna baru. Nama: ${user.name}${user.username ? ` • Username: @${user.username}` : ''}${user.email ? ` • Email: ${user.email}` : ''}`,
       type: 'USER',
       actorUserId: user.id,
+      referenceId: user.id,
+      telegramMode: 'ALWAYS',
     });
 
     return result;

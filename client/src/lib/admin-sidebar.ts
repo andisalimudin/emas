@@ -109,3 +109,48 @@ export const sidebarItems: SidebarItem[] = [
     roles: ['ADMIN'],
   },
 ];
+
+export interface SidebarSection {
+  label: string;
+  items: SidebarItem[];
+}
+
+export const sidebarSections: SidebarSection[] = [
+  {
+    label: 'Umum',
+    items: [
+      { title: 'Papan Pemuka', path: '/admin', icon: LayoutDashboard, roles: ['ADMIN'] },
+      { title: 'Notifikasi', path: '/admin/notifications', icon: Bell, roles: ['ADMIN'] },
+    ],
+  },
+  {
+    label: 'Pengurusan',
+    items: [
+      { title: 'Pengurusan Pengguna', path: '/admin/users', icon: Users, roles: ['ADMIN'] },
+      { title: 'Senarai Order', path: '/admin/orders', icon: Package, roles: ['ADMIN'] },
+      { title: 'Produk', path: '/admin/products', icon: ShoppingBag, roles: ['ADMIN'] },
+      { title: 'Kategori Produk', path: '/admin/categories', icon: Tags, roles: ['ADMIN'] },
+    ],
+  },
+  {
+    label: 'Semakan',
+    items: [
+      { title: 'Semakan Produk Vendor', path: '/admin/product-submissions', icon: ClipboardList, roles: ['ADMIN'] },
+      { title: 'Semakan Pelaburan Partner', path: '/admin/investment-submissions', icon: HandCoins, roles: ['ADMIN'] },
+      { title: 'Semakan Pembayaran', path: '/admin/payments', icon: CreditCard, roles: ['ADMIN'] },
+      { title: 'Semakan Offer Partner', path: '/admin/investment-commitments', icon: ListChecks, roles: ['ADMIN'] },
+    ],
+  },
+  {
+    label: 'Pelaburan',
+    items: [
+      { title: 'Harga Emas Kategori', path: '/admin/category-gold-prices', icon: Coins, roles: ['ADMIN'] },
+      { title: 'Offer Pelaburan', path: '/admin/investment-offers', icon: BadgePercent, roles: ['ADMIN'] },
+      { title: 'Ledger Pelaburan', path: '/admin/investment-ledger', icon: BookOpen, roles: ['ADMIN'] },
+    ],
+  },
+  {
+    label: 'Sistem',
+    items: [{ title: 'Tetapan', path: '/admin/settings', icon: Settings, roles: ['ADMIN'] }],
+  },
+];

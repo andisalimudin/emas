@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { sidebarItems } from '@/lib/admin-sidebar';
-import { LogOut, Menu, X } from 'lucide-react';
+import { sidebarSections } from '@/lib/admin-sidebar';
+import { ChevronDown, LogOut, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -38,6 +39,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/login');
   };
 
+  useEffect(() => {
+    const found = sidebarSections.find((section) =>
+      section.items.some((item) => pathname === item.path && !(item.roles && user?.role && !item.roles.includes(user.role)))
+    );
+    if (found) setOpenSection(found.label);
+  }, [pathname, user?.role]);
+
   if (!user) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
 
   return (
@@ -61,27 +69,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
-          {sidebarItems.map((item) => {
-            if (item.roles && !item.roles.includes(user.role)) return null;
-            
-            const isActive = pathname === item.path;
-            const Icon = item.icon;
+        <nav className="p-4 space-y-3">
+          {sidebarSections.map((section) => {
+            const visibleItems = section.items.filter((item) => !(item.roles && !item.roles.includes(user.role)));
+            if (visibleItems.length === 0) return null;
+            const isOpen = openSection === section.label;
 
             return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={clsx(
-                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                  isActive
-                    ? 'bg-gold-500/10 text-gold-500 border border-gold-500/20'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                )}
-              >
-                <Icon size={20} />
-                <span className="font-medium">{item.title}</span>
-              </Link>
+              <div key={section.label} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenSection((prev) => (prev === section.label ? null : section.label))}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+                  aria-expanded={isOpen}
+                >
+                  <div className="text-xs font-semibold tracking-wider text-gray-300 uppercase">{section.label}</div>
+                  <ChevronDown
+                    size={16}
+                    className={clsx('text-gray-400 transition-transform', isOpen ? 'rotate-180' : 'rotate-0')}
+                  />
+                </button>
+                <div className={clsx('px-2 pb-2 space-y-1', isOpen ? 'block' : 'hidden')}>
+                  {visibleItems.map((item) => {
+                    const isActive = pathname === item.path;
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        className={clsx(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                          isActive
+                            ? 'bg-gold-500/10 text-gold-500 border border-gold-500/20'
+                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                        )}
+                      >
+                        <Icon size={18} />
+                        <span className="font-medium">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </nav>

@@ -211,9 +211,12 @@ export class OrdersService {
     });
     await this.notificationsService.createForRole(this.prisma, 'ADMIN', {
       title: 'Pesanan Baharu',
-      message: `Pesanan baharu telah dibuat (ID: ${created.id}).`,
+      message: `Pesanan baharu telah dibuat (ID: ${created.id}). Amaun: RM${Number(created.totalAmount || 0).toFixed(2)}.`,
       type: 'ORDER',
       actorUserId: userId,
+      referenceId: created.id,
+      amountMYR: Number(created.totalAmount || 0),
+      telegramMode: 'ALWAYS',
     });
 
     return created;
