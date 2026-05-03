@@ -379,7 +379,9 @@ export class InvestmentOffersService {
           title: 'Komitmen Pelaburan Diluluskan',
           message: `Komitmen pelaburan anda telah diluluskan. Gram: ${grams}, Amaun: RM${amt.toFixed(2)}.`,
           type: 'INVESTMENT',
-          actorUserId: partnerId,
+          actorUserId: adminId,
+          referenceId: commitmentId,
+          amountMYR: amt,
         });
       }
       return res;
@@ -433,7 +435,8 @@ export class InvestmentOffersService {
           title: 'Komitmen Pelaburan Ditolak',
           message: `Komitmen pelaburan anda telah ditolak.${note ? ` Nota admin: ${note}` : ''}`.trim(),
           type: 'INVESTMENT',
-          actorUserId: partnerId,
+          actorUserId: adminId,
+          referenceId: commitmentId,
         });
       }
       return res;

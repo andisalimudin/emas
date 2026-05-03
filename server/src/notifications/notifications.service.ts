@@ -30,12 +30,51 @@ export class NotificationsService {
     }
   }
 
+  private formatMoneyMYR(amount: any) {
+    const n = Number(amount);
+    if (!Number.isFinite(n)) return null;
+    return `RM ${n.toLocaleString('ms-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  private formatWhenMY(date: Date) {
+    const d = date instanceof Date ? date : new Date(date as any);
+    if (!d || Number.isNaN(d.getTime())) return null;
+    return d.toLocaleString('ms-MY', {
+      timeZone: 'Asia/Kuala_Lumpur',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  private extractAmountMYR(texts: string[]) {
+    const text = (texts || []).filter(Boolean).join(' ');
+    const m = text.match(/rm\s*([0-9]+(?:\.[0-9]{1,2})?)/i);
+    if (!m) return null;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private extractReferenceId(texts: string[]) {
+    const text = (texts || []).filter(Boolean).join(' ');
+    const m = text.match(/\b(?:pesanan\s*id|order\s*id|id)\s*:\s*([a-z0-9-]{6,})/i);
+    return m?.[1] ? String(m[1]).trim() : null;
+  }
+
   private formatTelegramText(input: {
     title: string;
     message: string;
     type: string;
     actor?: { id?: string; name?: string; username?: string | null; role?: string; email?: string | null } | null;
+    recipient?: { id?: string; name?: string; username?: string | null; role?: string; email?: string | null } | null;
     targets?: string[];
+    targetUsernames?: string[];
+    referenceId?: string | null;
+    amountMYR?: number | null;
+    createdAt?: Date | null;
   }) {
     const title = String(input?.title || '').trim();
     const message = String(input?.message || '').trim();
@@ -44,17 +83,41 @@ export class NotificationsService {
     const actorUsername = String(input?.actor?.username || '').trim();
     const actorRole = String(input?.actor?.role || '').trim();
     const targets = Array.isArray(input?.targets) ? input.targets.filter((x) => typeof x === 'string' && x.trim()) : [];
+    const recipientName = String(input?.recipient?.name || '').trim();
+    const recipientUsername = String(input?.recipient?.username || '').trim();
+    const recipientRole = String(input?.recipient?.role || '').trim();
+    const targetUsernames = Array.isArray(input?.targetUsernames)
+      ? input.targetUsernames.filter((x) => typeof x === 'string' && x.trim())
+      : [];
 
-    const now = new Date();
-    const when = Number.isNaN(now.getTime()) ? '' : now.toLocaleString('ms-MY', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', year: 'numeric' });
+    const when = this.formatWhenMY(input?.createdAt instanceof Date ? input.createdAt : new Date());
+    const ref = (typeof input?.referenceId === 'string' && input.referenceId.trim()
+      ? input.referenceId.trim()
+      : this.extractReferenceId([title, message])) as string | null;
+    const amount =
+      typeof input?.amountMYR === 'number' && Number.isFinite(input.amountMYR) && input.amountMYR > 0
+        ? input.amountMYR
+        : this.extractAmountMYR([title, message]);
+    const amountText = amount ? this.formatMoneyMYR(amount) : null;
 
     const lines = [
       `[${type || 'SYSTEM'}] ${title}`,
-      actorName ? `User: ${actorName}${actorRole ? ` (${actorRole})` : ''}` : null,
-      !actorName && actorUsername ? `User: ${actorUsername}${actorRole ? ` (${actorRole})` : ''}` : null,
-      message,
+      ref ? `Transaksi: ${ref}` : null,
+      recipientName
+        ? `Penerima: ${recipientName}${recipientUsername ? ` (@${recipientUsername})` : ''}${recipientRole ? ` (${recipientRole})` : ''}`
+        : recipientUsername
+          ? `Penerima: @${recipientUsername}${recipientRole ? ` (${recipientRole})` : ''}`
+          : null,
+      actorName
+        ? `Admin: ${actorName}${actorUsername ? ` (@${actorUsername})` : ''}${actorRole ? ` (${actorRole})` : ''}`
+        : actorUsername
+          ? `Admin: @${actorUsername}${actorRole ? ` (${actorRole})` : ''}`
+          : null,
+      `Description: ${message}`,
+      amountText ? `Amaun: ${amountText}` : null,
       targets.length ? `Targets: ${targets.length}` : null,
-      when ? `Time: ${when}` : null,
+      targetUsernames.length ? `Usernames: ${targetUsernames.slice(0, 5).join(', ')}${targetUsernames.length > 5 ? ', ...' : ''}` : null,
+      when ? `Masa: ${when}` : null,
     ].filter(Boolean) as string[];
 
     return lines.join('\n');
@@ -145,7 +208,7 @@ export class NotificationsService {
   async createForUser(
     client: PrismaClientLike,
     userId: string,
-    input: { title: string; message: string; type: string; actorUserId?: string }
+    input: { title: string; message: string; type: string; actorUserId?: string; referenceId?: string; amountMYR?: number }
   ) {
     const title = typeof input?.title === 'string' ? input.title.trim() : '';
     const message = typeof input?.message === 'string' ? input.message.trim() : '';
@@ -169,9 +232,23 @@ export class NotificationsService {
       if (client === this.prisma) {
         const actorId = typeof input?.actorUserId === 'string' && input.actorUserId.trim() ? input.actorUserId.trim() : userId;
         const actor = await this.getUserSummary(actorId);
-        await this.telegramService.sendMessageSafe(
-          this.formatTelegramText({ title, message, type, actor })
-        );
+        const recipient = await this.getUserSummary(userId);
+        const shouldSend =
+          String(actor?.role || '').toUpperCase() === 'ADMIN' && String(recipient?.role || '').toUpperCase() !== 'ADMIN';
+        if (shouldSend) {
+          await this.telegramService.sendMessageSafe(
+            this.formatTelegramText({
+              title,
+              message,
+              type,
+              actor,
+              recipient,
+              referenceId: input?.referenceId || null,
+              amountMYR: typeof input?.amountMYR === 'number' ? input.amountMYR : null,
+              createdAt: created?.createdAt ? new Date(created.createdAt) : new Date(),
+            })
+          );
+        }
       }
       return created;
     } catch (err) {
@@ -182,7 +259,7 @@ export class NotificationsService {
   async createForUsers(
     client: PrismaClientLike,
     userIds: string[],
-    input: { title: string; message: string; type: string; actorUserId?: string }
+    input: { title: string; message: string; type: string; actorUserId?: string; referenceId?: string; amountMYR?: number }
   ) {
     const ids = Array.isArray(userIds) ? userIds.filter((x) => typeof x === 'string' && x.trim()) : [];
     if (!ids.length) return { ok: true, created: 0 };
@@ -209,9 +286,33 @@ export class NotificationsService {
       if (client === this.prisma) {
         const actorId = typeof input?.actorUserId === 'string' && input.actorUserId.trim() ? input.actorUserId.trim() : '';
         const actor = actorId ? await this.getUserSummary(actorId) : null;
-        await this.telegramService.sendMessageSafe(
-          this.formatTelegramText({ title, message, type, actor, targets: ids })
-        );
+        const shouldSendActor = String(actor?.role || '').toUpperCase() === 'ADMIN';
+        if (shouldSendActor) {
+          const samples = await this.prisma.user.findMany({
+            where: { id: { in: ids.slice(0, 20) } },
+            select: { username: true, role: true },
+          });
+          const usernames = (samples || [])
+            .filter((u: any) => String(u?.role || '').toUpperCase() !== 'ADMIN')
+            .map((u: any) => (typeof u?.username === 'string' ? u.username.trim() : ''))
+            .filter((x: string) => x.length > 0);
+          const hasNonAdminTargets = (samples || []).some((u: any) => String(u?.role || '').toUpperCase() !== 'ADMIN');
+          if (hasNonAdminTargets) {
+            await this.telegramService.sendMessageSafe(
+              this.formatTelegramText({
+                title,
+                message,
+                type,
+                actor,
+                targets: ids,
+                targetUsernames: usernames,
+                referenceId: input?.referenceId || null,
+                amountMYR: typeof input?.amountMYR === 'number' ? input.amountMYR : null,
+                createdAt: new Date(),
+              })
+            );
+          }
+        }
       }
       return { ok: true, created: Number(res?.count || 0) };
     } catch (err) {
@@ -222,7 +323,7 @@ export class NotificationsService {
   async createForRole(
     client: PrismaClientLike,
     role: string,
-    input: { title: string; message: string; type: string; actorUserId?: string }
+    input: { title: string; message: string; type: string; actorUserId?: string; referenceId?: string; amountMYR?: number }
   ) {
     const normalizedRole = typeof role === 'string' ? role.trim().toUpperCase() : '';
     if (!normalizedRole) return { ok: true, created: 0 };

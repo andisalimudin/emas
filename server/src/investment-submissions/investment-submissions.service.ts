@@ -181,7 +181,9 @@ export class InvestmentSubmissionsService {
           title: 'Pelaburan Diluluskan',
           message: `Permohonan pelaburan anda telah diluluskan. Amaun: RM${transferAmount.toFixed(2)}.`,
           type: 'INVESTMENT',
-          actorUserId: partnerId,
+          actorUserId: adminId,
+          referenceId: id,
+          amountMYR: transferAmount,
         });
       }
       return updated;
@@ -221,7 +223,9 @@ export class InvestmentSubmissionsService {
         title: 'Pelaburan Ditolak',
         message: `Permohonan pelaburan anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
         type: 'INVESTMENT',
-        actorUserId: submission.partnerId,
+        actorUserId: adminId,
+        referenceId: id,
+        amountMYR: Number(submission.transferAmount || 0),
       });
       return updated;
     } catch (err) {

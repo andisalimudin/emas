@@ -107,7 +107,8 @@ export class ProductSubmissionsService {
       title: 'Produk Diluluskan',
       message: `Produk anda telah diluluskan dan diterbitkan.`,
       type: 'PRODUCT',
-      actorUserId: submission.vendorId,
+      actorUserId: adminId,
+      referenceId: submission.id,
     });
     return updated;
   }
@@ -141,7 +142,8 @@ export class ProductSubmissionsService {
       title: 'Produk Ditolak',
       message: `Produk anda telah ditolak.${adminNote ? ` Nota admin: ${String(adminNote).trim()}` : ''}`.trim(),
       type: 'PRODUCT',
-      actorUserId: submission.vendorId,
+      actorUserId: adminId,
+      referenceId: submission.id,
     });
     return updated;
   }

@@ -70,12 +70,16 @@ export class PaymentsService {
       message: `Pembayaran anda telah disahkan (Pesanan ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: adminId,
+      referenceId: updated.id,
+      amountMYR: Number(updated?.payment?.amount || updated?.totalAmount || 0),
     });
     await this.notificationsService.createForRole(this.prisma, 'ADMIN', {
       title: 'Pembayaran Disahkan',
       message: `Pembayaran disahkan untuk pesanan (ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: adminId,
+      referenceId: updated.id,
+      amountMYR: Number(updated?.payment?.amount || updated?.totalAmount || 0),
     });
 
     return updated;
@@ -129,15 +133,18 @@ export class PaymentsService {
       message: `Pembayaran anda ditolak (Pesanan ID: ${updated.id}). Sila buat pembayaran semula.`,
       type: 'PAYMENT',
       actorUserId: adminId,
+      referenceId: updated.id,
+      amountMYR: Number(updated?.payment?.amount || updated?.totalAmount || 0),
     });
     await this.notificationsService.createForRole(this.prisma, 'ADMIN', {
       title: 'Pembayaran Ditolak',
       message: `Pembayaran ditolak untuk pesanan (ID: ${updated.id}).`,
       type: 'PAYMENT',
       actorUserId: adminId,
+      referenceId: updated.id,
+      amountMYR: Number(updated?.payment?.amount || updated?.totalAmount || 0),
     });
 
     return updated;
   }
 }
-
