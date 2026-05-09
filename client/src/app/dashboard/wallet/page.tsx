@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { API_URL, fetchAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wallet, CreditCard, ArrowUpRight, History, Gem, Sparkles, TrendingUp, Scale } from 'lucide-react';
+import { Wallet, CreditCard, ArrowUpRight, History, TrendingUp, Scale } from 'lucide-react';
 import { format } from 'date-fns';
 
 function getStatusBadge(status: string) {
@@ -43,7 +43,7 @@ export default function WalletPage() {
   const [offersLoading, setOffersLoading] = useState(false);
   const [commitments, setCommitments] = useState<any[]>([]);
   const [commitmentsLoading, setCommitmentsLoading] = useState(false);
-  const [offerGrams, setOfferGrams] = useState<Record<string, string>>({});
+  const [gramsToSubmit, setGramsToSubmit] = useState('');
   const [offerProcessingId, setOfferProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -132,8 +132,7 @@ export default function WalletPage() {
     }
   };
 
-  const commitOffer = async (offerId: string) => {
-    const gramsStr = offerGrams[offerId] || '';
+  const commitOffer = async (offerId: string, gramsStr: string) => {
     const grams = Number(gramsStr);
     if (!Number.isFinite(grams) || grams <= 0) return;
 
@@ -146,11 +145,11 @@ export default function WalletPage() {
         },
         body: JSON.stringify({ grams }),
       });
-      setOfferGrams((prev) => ({ ...prev, [offerId]: '' }));
+      setGramsToSubmit('');
       await loadWallet();
       await loadOffers();
       await loadCommitments();
-      alert('Permohonan pelaburan offer telah dihantar untuk semakan admin.');
+      alert('Permohonan pelaburan telah dihantar untuk semakan admin.');
     } catch (err) {
       console.error('Failed to commit offer:', err);
       alert((err as any)?.message || 'Gagal membuat pelaburan');
@@ -263,89 +262,58 @@ export default function WalletPage() {
             <Button variant="outline" onClick={refreshPartnerData}>Muat Semula</Button>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 via-black to-gold-950/30 p-6">
-            <img
-              src="/offer-gold.svg"
-              alt=""
-              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 opacity-25 blur-[0.2px]"
-            />
-            <div className="relative">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-gold-500/25 to-white/5 border border-white/10 flex items-center justify-center">
-                      <Gem size={18} className="text-gold-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-400">Offer Pelaburan</p>
-                      <h3 className="text-lg font-bold text-white truncate">
-                        {offersLoading ? 'Memuatkan...' : highlightOffer?.title || highlightOffer?.baseCategory || 'Tiada offer aktif'}
-                      </h3>
-                    </div>
-                  </div>
-                  {highlightOffer ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
-                        <Scale size={14} className="text-gold-500" />
-                        Baki {Number(highlightOffer.gramsRemaining || 0).toFixed(4)} g
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
-                        <TrendingUp size={14} className="text-gold-500" />
-                        Kategori {highlightOffer.baseCategory}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+              <div className="text-sm text-gray-400 mb-2">Baki Gram</div>
+              <div className="text-3xl font-bold text-gold-500">
+                {Number(wallet?.investmentGramsTotal || 0).toFixed(2)} g
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+              <div className="text-sm text-gray-400 mb-2">Harga Semasa/g (B&I)</div>
+              <div className="text-3xl font-bold text-gold-500">
+                {highlightOffer ? formatMoneyMYR(highlightOffer.basePricePerGram) : '-'}
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+              <div className="text-sm text-gray-400 mb-2">Margin/g</div>
+              <div className="text-3xl font-bold text-gold-500">
+                {highlightOffer ? formatMoneyMYR(highlightOffer.marginPerGram) : '-'}
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
+              <div className="text-sm text-gray-400 mb-3">Masukkan Gram</div>
+              <div className="space-y-2">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Contoh: 1.25"
+                  value={gramsToSubmit}
+                  onChange={(e) => setGramsToSubmit(e.target.value)}
+                />
                 <Button
-                  variant="outline"
-                  onClick={() => document.getElementById('offers')?.scrollIntoView({ behavior: 'smooth' })}
-                  disabled={offersLoading || !highlightOffer}
+                  onClick={() => highlightOffer && commitOffer(highlightOffer.id, gramsToSubmit)}
+                  disabled={!highlightOffer || offerProcessingId === highlightOffer?.id || !gramsToSubmit.trim()}
+                  className="w-full"
                 >
-                  Lihat Offer
+                  {offerProcessingId === highlightOffer?.id ? 'Memproses...' : 'Hantar'}
                 </Button>
               </div>
-
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="text-[11px] text-gray-400">Baki Gram</div>
-                  <div className="text-white font-semibold text-lg">
-                    {highlightOffer ? `${Number(highlightOffer.gramsRemaining || 0).toFixed(4)} g` : '-'}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="text-[11px] text-gray-400">Harga Semasa/g (B&I)</div>
-                  <div className="text-white font-semibold text-lg">
-                    {highlightOffer ? formatMoneyMYR(highlightOffer.basePricePerGram) : '-'}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="text-[11px] text-gray-400">Margin/g</div>
-                  <div className="text-white font-semibold text-lg">
-                    {highlightOffer ? formatMoneyMYR(highlightOffer.marginPerGram) : '-'}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 text-xs text-gray-500">
-                Harga dan margin bergantung kepada offer semasa. Tekan “Lihat Offer” untuk hantar gram kepada admin.
+              <div className="mt-2 text-xs text-gray-500">
+                Jumlah: {highlightOffer ? formatMoneyMYR(Number(gramsToSubmit || 0) * Number(highlightOffer.basePricePerGram || 0)) : '-'}
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-2">Jumlah Pelaburan (Diluluskan)</h3>
-              <p className="text-3xl font-bold text-gold-500">
-                {Number(wallet?.investmentGramsTotal || 0).toFixed(4)} g
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Jumlah ini bertambah selepas admin meluluskan pelaburan offer.
-              </p>
-            </div>
-
-            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
               <h3 className="text-lg font-bold text-white mb-2">Jumlah Deposit Pelaburan (Diluluskan)</h3>
               <p className="text-3xl font-bold text-gold-500">
-                RM {Number(wallet?.investmentTotal || 0).toFixed(2)}
+                {formatMoneyMYR(wallet?.investmentTotal || 0)}
               </p>
               <p className="text-xs text-gray-500 mt-2">
                 Jumlah ini akan bertambah selepas admin meluluskan slip bayaran.
@@ -425,114 +393,9 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div id="offers" className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold-500/20 to-white/5 border border-white/10 flex items-center justify-center">
-                    <Gem size={18} className="text-gold-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Offer Pelaburan (Gram)</h3>
-                    <p className="text-xs text-gray-500 mt-1">Pilih offer dan masukkan gram untuk hantar semakan admin.</p>
-                  </div>
-                </div>
-              </div>
-              <Button variant="outline" onClick={loadOffers}>Muat Semula</Button>
-            </div>
-
-            {offersLoading ? (
-              <div className="text-gray-400 mt-4">Memuatkan offer...</div>
-            ) : offers.length === 0 ? (
-              <div className="text-gray-400 mt-4">Tiada offer aktif buat masa ini.</div>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {offers.map((of) => (
-                  <div
-                    key={of.id}
-                    className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black/60"
-                  >
-                    <img
-                      src="/offer-gold.svg"
-                      alt=""
-                      className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 opacity-25 blur-[0.2px]"
-                    />
-                    <div className="relative p-5">
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                              <Sparkles size={18} className="text-gold-500" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-white font-semibold truncate">{of.title || 'Offer Pelaburan'}</p>
-                              <div className="mt-1 flex flex-wrap gap-2">
-                                <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
-                                  <TrendingUp size={14} className="text-gold-500" />
-                                  Baki {Number(of.gramsRemaining || 0).toFixed(4)} g
-                                </span>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-200">
-                                  <Scale size={14} className="text-gold-500" />
-                                  Kategori {of.baseCategory}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-                              <div className="text-[11px] text-gray-400">Harga semasa/g (B&I)</div>
-                              <div className="text-white font-semibold">RM {Number(of.basePricePerGram || 0).toFixed(2)}</div>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-                              <div className="text-[11px] text-gray-400">Margin/g</div>
-                              <div className="text-white font-semibold">RM {Number(of.marginPerGram || 0).toFixed(2)}</div>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-                              <div className="text-[11px] text-gray-400">Anggaran potongan (RM)</div>
-                              <div className="text-white font-semibold">
-                                {(Number(offerGrams[of.id] || 0) * Number(of.basePricePerGram || 0)).toFixed(2)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="w-full md:w-[260px]">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-xs text-gray-400 mb-2">Masukkan gram</div>
-                            <div className="flex gap-2 items-stretch">
-                              <Input
-                                type="number"
-                                step="0.0001"
-                                min="0"
-                                placeholder="Contoh: 1.2500"
-                                value={offerGrams[of.id] || ''}
-                                onChange={(e) => setOfferGrams((prev) => ({ ...prev, [of.id]: e.target.value }))}
-                              />
-                              <Button
-                                onClick={() => commitOffer(of.id)}
-                                disabled={offerProcessingId === of.id || !(offerGrams[of.id] || '').trim()}
-                                className="shrink-0"
-                              >
-                                {offerProcessingId === of.id ? 'Memproses...' : 'Hantar'}
-                              </Button>
-                            </div>
-                            <div className="mt-2 text-[11px] text-gray-500">
-                              Sistem akan hantar permohonan untuk semakan admin.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           <div className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden">
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Sejarah Pelaburan Offer</h3>
+              <h3 className="text-lg font-bold text-white">Sejarah Pelaburan (Gram)</h3>
               <Button variant="outline" onClick={loadCommitments}>Muat Semula</Button>
             </div>
             <div className="overflow-x-auto">
@@ -540,7 +403,6 @@ export default function WalletPage() {
                 <thead className="bg-white/5 text-gray-200 uppercase font-medium">
                   <tr>
                     <th className="px-6 py-4">Tarikh</th>
-                    <th className="px-6 py-4">Offer</th>
                     <th className="px-6 py-4">Gram</th>
                     <th className="px-6 py-4">Amaun</th>
                     <th className="px-6 py-4">Margin/g</th>
@@ -550,11 +412,11 @@ export default function WalletPage() {
                 <tbody className="divide-y divide-white/10">
                   {commitmentsLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center">Memuatkan...</td>
+                      <td colSpan={5} className="px-6 py-8 text-center">Memuatkan...</td>
                     </tr>
                   ) : commitments.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center">Tiada pelaburan offer lagi.</td>
+                      <td colSpan={5} className="px-6 py-8 text-center">Tiada rekod lagi.</td>
                     </tr>
                   ) : (
                     commitments.map((c) => (
@@ -562,10 +424,9 @@ export default function WalletPage() {
                         <td className="px-6 py-4">
                           {format(new Date(c.createdAt), 'MMM dd, yyyy HH:mm')}
                         </td>
-                        <td className="px-6 py-4 text-white">{c.offer?.title || c.offer?.baseCategory || '-'}</td>
-                        <td className="px-6 py-4 font-mono text-white">{Number(c.grams || 0).toFixed(4)}g</td>
-                        <td className="px-6 py-4">RM {Number(c.amount || 0).toFixed(2)}</td>
-                        <td className="px-6 py-4">RM {Number(c.marginPerGram || 0).toFixed(2)}</td>
+                        <td className="px-6 py-4 font-mono text-white">{Number(c.grams || 0).toFixed(2)} g</td>
+                        <td className="px-6 py-4">{formatMoneyMYR(c.amount || 0)}</td>
+                        <td className="px-6 py-4">{formatMoneyMYR(c.marginPerGram || 0)}</td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusBadge(c.status)}`}>
                             {c.status}
@@ -611,7 +472,7 @@ export default function WalletPage() {
                         <td className="px-6 py-4">
                           {format(new Date(it.createdAt), 'MMM dd, yyyy HH:mm')}
                         </td>
-                        <td className="px-6 py-4">RM {Number(it.transferAmount || 0).toFixed(2)}</td>
+                        <td className="px-6 py-4">{formatMoneyMYR(it.transferAmount || 0)}</td>
                         <td className="px-6 py-4">
                           <div>
                             <p className="text-white">{it.reference || '-'}</p>
@@ -678,7 +539,7 @@ export default function WalletPage() {
               />
               {topUpAmount && (
                 <p className="text-xs text-gray-500 mt-2">
-                  Kos: RM {(parseInt(topUpAmount) * 2).toFixed(2)}
+                  Kos: {formatMoneyMYR(parseInt(topUpAmount) * 2)}
                 </p>
               )}
             </div>

@@ -41,7 +41,7 @@ export class UploadsController {
           m === 'image/gif';
         cb(ok ? null : new BadRequestException('Fail mesti gambar atau PDF'), ok);
       },
-      limits: { fileSize: 10 * 1024 * 1024 },
+      limits: { fileSize: 50 * 1024 * 1024 },
     }),
   )
   async upload(@Req() req: any, @UploadedFile() file?: any) {
